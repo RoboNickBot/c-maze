@@ -80,17 +80,56 @@ void update_game ( struct mazegame *g, enum command player_move )
     switch ( player_move )
     {
         case MOVE_N:
-            g->player.p.y--;
+            if ( g->player.d == NORTH )
+            {
+                if ( g->tiles[g->player.p.x][g->player.p.y - 1].t == SPACE )
+                {
+                    g->player.p.y--;
+                }
+            }
+            else
+            {
+                g->player.d = NORTH;
+            }
             break;
         case MOVE_S:
-            g->player.p.y++;
+            if ( g->player.d == SOUTH )
+            {
+                if ( g->tiles[g->player.p.x][g->player.p.y + 1].t == SPACE )
+                {
+                    g->player.p.y++;
+                }
+            }
+            else
+            {
+                g->player.d = SOUTH;
+            }
             break;
         case MOVE_W:
-            g->player.p.x--;
+            if ( g->player.d == WEST )
+            {
+                if ( g->tiles[g->player.p.x - 1][g->player.p.y].t == SPACE )
+                {
+                    g->player.p.x--;
+                }
+            }
+            else
+            {
+                g->player.d = WEST;
+            }
             break;
         case MOVE_E:
-            g->player.p.x++;
-            printf ( "I moved!" );
+            if ( g->player.d == EAST )
+            {
+                if ( g->tiles[g->player.p.x + 1][g->player.p.y].t == SPACE )
+                {
+                    g->player.p.x++;
+                }
+            }
+            else
+            {
+                g->player.d = EAST;
+            }
             break;
         default:
             break;

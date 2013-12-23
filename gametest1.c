@@ -12,25 +12,33 @@ int main ()
     struct position start_pos;
     struct position goal_pos;
     int x;
+    int mapsize = 4;
     
-    start_pos = new_position ( 0, 0 );
+    start_pos = new_position ( 1, 1 );
     goal_pos = new_position ( 2, 1 );
 
-    map = malloc ( sizeof ( enum tiletype * ) * 3 );
-    for ( x = 0; x < 3; x++ )
+    map = malloc ( sizeof ( enum tiletype * ) * mapsize );
+    for ( x = 0; x < mapsize; x++ )
     {
-        map[x] = malloc ( sizeof ( enum tiletype ) * 3 );
+        map[x] = malloc ( sizeof ( enum tiletype ) * mapsize );
     }
 
     map[0][0] = WALL;
     map[0][1] = WALL;
     map[0][2] = WALL;
+    map[0][3] = WALL;
     map[1][0] = WALL;
     map[1][1] = SPACE;
-    map[1][2] = WALL;
+    map[1][2] = SPACE;
+    map[1][3] = WALL;
     map[2][0] = WALL;
-    map[2][1] = WALL;
-    map[2][2] = WALL;
+    map[2][1] = SPACE;
+    map[2][2] = SPACE;
+    map[2][3] = WALL;
+    map[3][0] = WALL;
+    map[3][1] = WALL;
+    map[3][2] = WALL;
+    map[3][3] = WALL;
 
     game = new_mazegame ( 3, map, start_pos, goal_pos );
 
@@ -40,11 +48,23 @@ int main ()
 
     print_info ( game );
 
+    update_game ( &game, MOVE_E );
+
+    print_info ( game );
+
+    update_game ( &game, MOVE_N );
+
+    print_info ( game );
+
+    update_game ( &game, MOVE_N );
+
+    print_info ( game );
+
     return 0;
 
 }
 
 void print_info ( struct mazegame game )
 {
-    printf ( "player at %d, %d\n", game.player.p.x, game.player.p.y );
+    printf ( "player at %d, %d with direction %d\n", game.player.p.x, game.player.p.y, game.player.d );
 }
