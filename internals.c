@@ -17,6 +17,7 @@ struct mazegame new_mazegame ( int mapsize, enum tiletype **tiles, struct positi
     
     game.player = new_player ( start_pos );
     game.goal_position = copy_position ( goal_pos );
+    game.mapsize = mapsize;
     
     /* I need to malloc a block of mapsize pointers, and then malloc a block of mapsize mazetiles at each of those pointers
      * 

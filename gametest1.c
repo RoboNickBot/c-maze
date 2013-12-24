@@ -2,12 +2,14 @@
 #include <stdio.h>
 
 #include "internals.h"
+#include "IOStuff.h"
 
 void print_info ( struct mazegame game );
 
 int main ()
 {
     struct mazegame game;
+    struct game_display *display;
     enum tiletype **map;
     struct position start_pos;
     struct position goal_pos;
@@ -40,25 +42,31 @@ int main ()
     map[3][2] = WALL;
     map[3][3] = WALL;
 
-    game = new_mazegame ( 3, map, start_pos, goal_pos );
+    game = new_mazegame ( mapsize, map, start_pos, goal_pos );
 
+    display = init_display ( mapsize );
+
+    printf ( "test\n" );
+    update_display ( display, &game );
     print_info ( game );
 
     update_game ( &game, MOVE_E );
-
+    update_display ( display, &game );
     print_info ( game );
 
     update_game ( &game, MOVE_E );
-
+    update_display ( display, &game );
     print_info ( game );
 
     update_game ( &game, MOVE_N );
-
+    update_display ( display, &game );
     print_info ( game );
 
     update_game ( &game, MOVE_N );
-
+    update_display ( display, &game );
     print_info ( game );
+
+    destroy_display ( display );
 
     return 0;
 
