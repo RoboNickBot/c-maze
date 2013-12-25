@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "internals.h"
 #include "IOStuff.h"
@@ -15,6 +16,8 @@ int main ()
     struct position goal_pos;
     int x;
     int mapsize = 4;
+    int game_running = 1;
+    enum command command;
     
     start_pos = new_position ( 1, 1 );
     goal_pos = new_position ( 2, 1 );
@@ -46,27 +49,22 @@ int main ()
 
     display = init_display ( mapsize );
 
-    printf ( "test\n" );
-    update_display ( display, &game );
-    print_info ( game );
-
-    update_game ( &game, MOVE_E );
-    update_display ( display, &game );
-    print_info ( game );
-
-    update_game ( &game, MOVE_E );
-    update_display ( display, &game );
-    print_info ( game );
-
-    update_game ( &game, MOVE_N );
-    update_display ( display, &game );
-    print_info ( game );
-
-    update_game ( &game, MOVE_N );
-    update_display ( display, &game );
-    print_info ( game );
+    while ( game_running )
+    {
+        update_display ( display, &game );
+        get_command ( &command );
+        if ( command == QUIT )
+        {
+            game_running = 0;
+        }
+        else
+        {
+            update_game ( &game, command );
+        }
+    }
 
     destroy_display ( display );
+    destroy_mazegame ( game );
 
     return 0;
 

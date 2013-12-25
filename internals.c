@@ -36,6 +36,18 @@ struct mazegame new_mazegame ( int mapsize, enum tiletype **tiles, struct positi
     return game;
 }
 
+void destroy_mazegame ( struct mazegame game )
+{
+    int x;
+
+    for ( x = 0; x < game.mapsize; x++ )
+    {
+        free ( game.tiles[x] );
+    }
+
+    free ( game.tiles );
+}
+
 struct player new_player ( struct position start_pos )
 {
     struct player player;

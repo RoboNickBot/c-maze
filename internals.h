@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-enum command { MOVE_N, MOVE_S, MOVE_E, MOVE_W, NONE };
+enum command { QUIT, MOVE_N, MOVE_S, MOVE_E, MOVE_W, NONE };
 enum direction { NORTH, SOUTH, EAST, WEST };
 enum tiletype { WALL, SPACE };
 
@@ -36,5 +36,6 @@ struct mazegame new_mazegame ( int mapsize, enum tiletype **tiles, struct positi
 struct position new_position ( int x, int y );
 void update_game ( struct mazegame *g, enum command player_move );
 bool equal_pos ( struct position a, struct position b );
+void destroy_mazegame ();
 
 #endif
