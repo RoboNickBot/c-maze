@@ -25,18 +25,15 @@ struct mazegame new_mazegame ( int mapsize, enum tiletype *tiles, struct positio
      */
     printf ( "about to build the tile structure\n" );
     game.tiles = malloc ( sizeof ( struct mazetile * ) * mapsize );
-    printf ( "malloc on x success\n" );
     for ( x = 0; x < mapsize; x++ )
     {
         game.tiles[x] = malloc ( sizeof ( struct mazetile ) * mapsize );
-        printf ( "malloc on y success\n" );
         for ( y = 0; y < mapsize; y++ )
         {
             game.tiles[x][y] = new_mazetile ( tiles[x*mapsize + y], x, y );
         }
     }
     printf ( "freeing proto-structure\n" );
-    printf ( "Final address is %s\n", tiles );
     free ( tiles );
     printf ( "finished the tile structure\n" );
 

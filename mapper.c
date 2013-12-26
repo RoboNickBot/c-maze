@@ -30,7 +30,6 @@ enum tiletype* read_map ( int mapsize, char *map_file_name, struct position *p_p
         while ( breaker )
         {
             c = fgetc ( file );
-            /*printf ( "%c ", c );*/
 
             if ( ( char ) c != '\n' && c != EOF )
             {
@@ -61,7 +60,6 @@ enum tiletype* read_map ( int mapsize, char *map_file_name, struct position *p_p
             }
             x++;
         }
-        printf ( "\n\n" );
         y++;
     }
     if ( fclose ( file ) != 0 )
