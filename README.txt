@@ -11,8 +11,8 @@
  as a bit of practice in learning the C language (and SDL!)
 
  Right now it is feature-complete to the java version (minus dialog boxes
- explaining the "story") but has an updated lighting algorithm that doesn't
- go through walls (but still needs work).
+ explaining the "story") but has an updated lighting algorithm that *doesn't*
+ go through walls! (still needs work)
 
  Objective:
     
