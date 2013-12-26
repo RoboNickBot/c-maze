@@ -14,6 +14,11 @@
  explaining the "story") but has an updated lighting algorithm that doesn't
  go through walls (but still needs work).
 
+ Objective:
+    
+    find the treasure
+
+
  Controls:
     
     WASD for turning and movement
@@ -26,6 +31,11 @@
     cleaner code
         This is the first thing I've written in C, and I had no idea how
         to organize things.
+
+    cleaner resources
+        putting images in a sprite-sheet, etc
+
+    animations
 
     items/powerups
         Flashlight batteries might be a good place to start
