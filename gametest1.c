@@ -38,7 +38,7 @@ int main ()
     {
         update_display ( display, &game );
         get_command ( &command );
-        if ( command == QUIT )
+        if ( command == QUIT || equal_pos ( game.player.p, goal_pos ) )
         {
             game_running = 0;
         }
