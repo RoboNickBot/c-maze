@@ -15,6 +15,8 @@ struct game_display
     SDL_Texture *wall;
     SDL_Texture *pN, *pS, *pE, *pW;
     SDL_Texture *goal;
+    SDL_Texture *dark1;
+    SDL_Texture *dark2;
 };
 
 struct game_display *init_display ( int mapsize )
@@ -25,11 +27,12 @@ struct game_display *init_display ( int mapsize )
     {
         printf ( SDL_GetError () );
     }
+    printf ( "sdl start successful\n" );
 
     struct game_display *display = malloc ( sizeof ( struct game_display ) );
 
     display->win = NULL;
-    display->win = SDL_CreateWindow ( "Eye of the Pharaohs", 100, 100, mapsize * 32, mapsize * 32, SDL_WINDOW_SHOWN );
+    display->win = SDL_CreateWindow ( "Eye of the Pharaohs", 0, 0, mapsize * 16, mapsize * 16, SDL_WINDOW_SHOWN );
     if ( display->win == NULL )
     {
         printf ( SDL_GetError () );
@@ -56,6 +59,10 @@ struct game_display *init_display ( int mapsize )
     display->pW = IMG_LoadTexture ( display->ren, "playerW.png" );
     display->goal = NULL;
     display->goal = IMG_LoadTexture ( display->ren, "goal.png" );
+    display->dark1 = NULL;
+    display->dark1 = IMG_LoadTexture ( display->ren, "dark1.png");
+    display->dark2 = NULL;
+    display->dark2 = IMG_LoadTexture ( display->ren, "dark2.png");
 
     printf ( "completing init_display\n" );
 
@@ -67,14 +74,11 @@ void apply_texture ( int x, int y, SDL_Renderer *ren, SDL_Texture *tex )
     SDL_Rect pos;
     pos.x = x;
     pos.y = y;
-    pos.w = 32;
-    pos.h = 32;
-
-    printf ( "applying a texture.. " );
+    pos.w = 16;
+    pos.h = 16;
 
     SDL_RenderCopy ( ren, tex, NULL, &pos );
 
-    printf ( "texture applied!\n" );
 }
 
 void destroy_display ( struct game_display *display )
@@ -99,30 +103,23 @@ void update_display ( struct game_display *display, struct mazegame *game )
     int x, y;
     SDL_Texture *tex = NULL;
 
-    printf ( "starting display update.. " );
-
-    printf ( " .. with mapsize %d.. ", game->mapsize );
     for ( x = 0; x < game->mapsize; x++ )
     {
-        printf ( "we are in the for block x " );
         for ( y = 0; y < game->mapsize; y++ )
         {
             switch ( game->tiles[x][y].t )
             {
                 case WALL:
                     tex = display->wall;
-                    printf ( "wall" );
                     break;
                 case SPACE:
                     tex = display->ground;
-                    printf ( "ground" );
                     break;
                 default:
-                    printf ( "problem" );
                     break;
             }
             
-            apply_texture ( x * 32, y * 32, display->ren, tex );
+            apply_texture ( x * 16, y * 16, display->ren, tex );
         }
     }
 
@@ -144,15 +141,32 @@ void update_display ( struct game_display *display, struct mazegame *game )
         default:
             break;
     }
-    apply_texture ( game->player.p.x * 32, game->player.p.y * 32, display->ren, tex );
+    apply_texture ( game->goal_position.x * 16, game->goal_position.y * 16, display->ren, display->goal );
 
-    apply_texture ( game->goal_position.x * 32, game->goal_position.y * 32, display->ren, display->goal );
+    apply_texture ( game->player.p.x * 16, game->player.p.y * 16, display->ren, tex );
+
+    for ( x = 0; x < game->mapsize; x++ )
+    {
+        for ( y = 0; y < game->mapsize; y++ )
+        {
+            if ( game->tiles[x][y].light < 2 )
+            {
+                if ( game->tiles[x][y].light < 1 )
+                {
+                    apply_texture ( x * 16, y * 16, display->ren, display->dark2 );
+                }
+                else
+                {
+                    apply_texture ( x * 16, y * 16, display->ren, display->dark1 );
+                }
+            }
+        }
+    }
 
     SDL_RenderPresent ( display->ren );
 
     SDL_Delay ( 20 );
 
-    printf ( "done!\n");
 }
 
 void get_command ( enum command *command )

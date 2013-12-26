@@ -20,7 +20,7 @@ struct player
 struct mazetile
 {
     enum tiletype t;
-    int light;
+    float light;
     struct position p;
 };
 struct mazegame
@@ -32,7 +32,7 @@ struct mazegame
 };
 
 
-struct mazegame new_mazegame ( int mapsize, enum tiletype **tiles, struct position start_pos, struct position goal_pos );
+struct mazegame new_mazegame ( int mapsize, enum tiletype *tiles, struct position start_pos, struct position goal_pos );
 struct position new_position ( int x, int y );
 void update_game ( struct mazegame *g, enum command player_move );
 bool equal_pos ( struct position a, struct position b );

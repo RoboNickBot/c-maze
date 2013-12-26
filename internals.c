@@ -9,7 +9,7 @@ struct position copy_position ( struct position other );
 struct player new_player ( struct position start_pos );
 struct mazetile new_mazetile ( enum tiletype type, int x, int y );
 
-struct mazegame new_mazegame ( int mapsize, enum tiletype **tiles, struct position start_pos, struct position goal_pos )
+struct mazegame new_mazegame ( int mapsize, enum tiletype *tiles, struct position start_pos, struct position goal_pos )
 {
     int x;
     int y;
@@ -23,15 +23,22 @@ struct mazegame new_mazegame ( int mapsize, enum tiletype **tiles, struct positi
      * 
      * All of this then goes in game.tiles
      */
+    printf ( "about to build the tile structure\n" );
     game.tiles = malloc ( sizeof ( struct mazetile * ) * mapsize );
+    printf ( "malloc on x success\n" );
     for ( x = 0; x < mapsize; x++ )
     {
         game.tiles[x] = malloc ( sizeof ( struct mazetile ) * mapsize );
+        printf ( "malloc on y success\n" );
         for ( y = 0; y < mapsize; y++ )
         {
-            game.tiles[x][y] = new_mazetile ( tiles[x][y], x, y );
+            game.tiles[x][y] = new_mazetile ( tiles[x*mapsize + y], x, y );
         }
     }
+    printf ( "freeing proto-structure\n" );
+    printf ( "Final address is %s\n", tiles );
+    free ( tiles );
+    printf ( "finished the tile structure\n" );
 
     return game;
 }
@@ -87,6 +94,54 @@ bool equal_pos ( struct position a, struct position b )
 {
     return ( a.x == b.x && a.y == b.y );
 }
+
+void reset_light ( struct mazegame *game )
+{
+    int x;
+    int y;
+    for ( x = 0; x < game->mapsize; x++ )
+    {
+        for ( y = 0; y < game->mapsize; y++ )
+        {
+            game->tiles[x][y].light = 0;
+        }
+    }
+}
+
+void recurse_light ( float value, struct mazetile **tiles, enum direction d, struct position p )
+{
+    /*printf ( "starting recurse light with %f\n", value );*/
+    float divisor = 2.0;
+    tiles[p.x][p.y].light += value;
+    if ( value >= 1.0 && tiles[p.x][p.y].t == SPACE ) {
+        switch ( d )
+        {
+            case NORTH:
+                recurse_light ( value / divisor, tiles, d, new_position ( p.x, p.y-1 ));
+                recurse_light ( value / divisor, tiles, d, new_position ( p.x-1, p.y-1 ));
+                recurse_light ( value / divisor, tiles, d, new_position ( p.x+1, p.y-1 ));
+                break;
+            case SOUTH:
+                recurse_light ( value / divisor, tiles, d, new_position ( p.x, p.y+1 ));
+                recurse_light ( value / divisor, tiles, d, new_position ( p.x-1, p.y+1 ));
+                recurse_light ( value / divisor, tiles, d, new_position ( p.x+1, p.y+1 ));
+                break;
+            case EAST:
+                recurse_light ( value / divisor, tiles, d, new_position ( p.x+1, p.y ));
+                recurse_light ( value / divisor, tiles, d, new_position ( p.x+1, p.y-1 ));
+                recurse_light ( value / divisor, tiles, d, new_position ( p.x+1, p.y+1 ));
+                break;
+            case WEST:
+                recurse_light ( value / divisor, tiles, d, new_position ( p.x-1, p.y ));
+                recurse_light ( value / divisor, tiles, d, new_position ( p.x-1, p.y-1 ));
+                recurse_light ( value / divisor, tiles, d, new_position ( p.x-1, p.y+1 ));
+                break;
+            default:
+                break;
+        }
+    }
+}
+
 
 void update_game ( struct mazegame *g, enum command player_move )
 {
@@ -147,4 +202,7 @@ void update_game ( struct mazegame *g, enum command player_move )
         default:
             break;
     }
+
+    reset_light ( g );
+    recurse_light ( 10, g->tiles, g->player.d, g->player.p );
 }
