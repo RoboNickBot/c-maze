@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 
+enum orientation { STRAIGHT, LEFT, RIGHT };
 enum command { QUIT, MOVE_N, MOVE_S, MOVE_E, MOVE_W, NONE };
 enum direction { NORTH, SOUTH, EAST, WEST };
 enum tiletype { WALL, SPACE };

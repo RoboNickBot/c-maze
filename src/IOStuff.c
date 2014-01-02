@@ -173,7 +173,7 @@ void update_display ( struct game_display *display, struct mazegame *game )
     {
         for ( y = 0; y < game->mapsize; y++ )
         {
-            if ( game->tiles[x][y].light < 2 )
+            if ( game->tiles[x][y].light < 3 )
             {
                 if ( game->tiles[x][y].light < 1 )
                 {

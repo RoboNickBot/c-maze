@@ -105,33 +105,80 @@ void reset_light ( struct mazegame *game )
     }
 }
 
-void recurse_light ( float value, struct mazetile **tiles, enum direction d, struct position p )
+void recurse_light ( float value, struct mazetile **tiles, enum direction d, enum orientation o, struct position p )
 {
     /*printf ( "starting recurse light with %f\n", value );*/
     float divisor = 2.0;
+    float side_divisor = 3.0;
     tiles[p.x][p.y].light += value;
-    if ( value >= 1.0 && tiles[p.x][p.y].t == SPACE ) {
-        switch ( d )
+    if ( value >= 1.0 && tiles[p.x][p.y].t == SPACE )
+    {
+        switch ( o )
         {
-            case NORTH:
-                recurse_light ( value / divisor, tiles, d, new_position ( p.x, p.y-1 ));
-                recurse_light ( value / divisor, tiles, d, new_position ( p.x-1, p.y-1 ));
-                recurse_light ( value / divisor, tiles, d, new_position ( p.x+1, p.y-1 ));
+            case STRAIGHT:
+                switch ( d )
+                {
+                    case NORTH:
+                        recurse_light ( value / divisor, tiles, d, STRAIGHT, new_position ( p.x, p.y-1 ));
+                        recurse_light ( value / side_divisor, tiles, d, LEFT, new_position ( p.x-1, p.y-1 ));
+                        recurse_light ( value / side_divisor, tiles, d, RIGHT, new_position ( p.x+1, p.y-1 ));
+                        break;
+                    case SOUTH:
+                        recurse_light ( value / divisor, tiles, d, STRAIGHT, new_position ( p.x, p.y+1 ));
+                        recurse_light ( value / side_divisor, tiles, d, RIGHT, new_position ( p.x-1, p.y+1 ));
+                        recurse_light ( value / side_divisor, tiles, d, LEFT, new_position ( p.x+1, p.y+1 ));
+                        break;
+                    case EAST:
+                        recurse_light ( value / divisor, tiles, d, STRAIGHT, new_position ( p.x+1, p.y ));
+                        recurse_light ( value / side_divisor, tiles, d, LEFT, new_position ( p.x+1, p.y-1 ));
+                        recurse_light ( value / side_divisor, tiles, d, RIGHT, new_position ( p.x+1, p.y+1 ));
+                        break;
+                    case WEST:
+                        recurse_light ( value / divisor, tiles, d, STRAIGHT, new_position ( p.x-1, p.y ));
+                        recurse_light ( value / side_divisor, tiles, d, RIGHT, new_position ( p.x-1, p.y-1 ));
+                        recurse_light ( value / side_divisor, tiles, d, LEFT, new_position ( p.x-1, p.y+1 ));
+                        break;
+                    default:
+                        break;
+                }
                 break;
-            case SOUTH:
-                recurse_light ( value / divisor, tiles, d, new_position ( p.x, p.y+1 ));
-                recurse_light ( value / divisor, tiles, d, new_position ( p.x-1, p.y+1 ));
-                recurse_light ( value / divisor, tiles, d, new_position ( p.x+1, p.y+1 ));
+            case LEFT:
+                switch ( d )
+                {
+                    case NORTH:
+                        recurse_light ( value / side_divisor, tiles, d, LEFT, new_position ( p.x-1, p.y-1 ));
+                        break;
+                    case SOUTH:
+                        recurse_light ( value / side_divisor, tiles, d, LEFT, new_position ( p.x+1, p.y+1 ));
+                        break;
+                    case EAST:
+                        recurse_light ( value / side_divisor, tiles, d, LEFT, new_position ( p.x+1, p.y-1 ));
+                        break;
+                    case WEST:
+                        recurse_light ( value / side_divisor, tiles, d, LEFT, new_position ( p.x-1, p.y+1 ));
+                        break;
+                    default:
+                        break;
+                }
                 break;
-            case EAST:
-                recurse_light ( value / divisor, tiles, d, new_position ( p.x+1, p.y ));
-                recurse_light ( value / divisor, tiles, d, new_position ( p.x+1, p.y-1 ));
-                recurse_light ( value / divisor, tiles, d, new_position ( p.x+1, p.y+1 ));
-                break;
-            case WEST:
-                recurse_light ( value / divisor, tiles, d, new_position ( p.x-1, p.y ));
-                recurse_light ( value / divisor, tiles, d, new_position ( p.x-1, p.y-1 ));
-                recurse_light ( value / divisor, tiles, d, new_position ( p.x-1, p.y+1 ));
+            case RIGHT:
+                switch ( d )
+                {
+                    case NORTH:
+                        recurse_light ( value / side_divisor, tiles, d, RIGHT, new_position ( p.x+1, p.y-1 ));
+                        break;
+                    case SOUTH:
+                        recurse_light ( value / side_divisor, tiles, d, RIGHT, new_position ( p.x-1, p.y+1 ));
+                        break;
+                    case EAST:
+                        recurse_light ( value / side_divisor, tiles, d, RIGHT, new_position ( p.x+1, p.y+1 ));
+                        break;
+                    case WEST:
+                        recurse_light ( value / side_divisor, tiles, d, RIGHT, new_position ( p.x-1, p.y-1 ));
+                        break;
+                    default:
+                        break;
+                }
                 break;
             default:
                 break;
@@ -201,5 +248,5 @@ void update_game ( struct mazegame *g, enum command player_move )
     }
 
     reset_light ( g );
-    recurse_light ( 10, g->tiles, g->player.d, g->player.p );
+    recurse_light ( 10, g->tiles, g->player.d, STRAIGHT, g->player.p );
 }
