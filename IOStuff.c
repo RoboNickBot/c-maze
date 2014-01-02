@@ -6,17 +6,14 @@
 
 #include "internals.h"
 
+enum tile_image { WALL1, SPACE1, ERROR, GOAL1, DARK1, DARK2, PN, PS, PE, PW };
+
 struct game_display
 {
     SDL_Window *win;
     SDL_Renderer *ren;
 
-    SDL_Texture *ground;
-    SDL_Texture *wall;
-    SDL_Texture *pN, *pS, *pE, *pW;
-    SDL_Texture *goal;
-    SDL_Texture *dark1;
-    SDL_Texture *dark2;
+    SDL_Texture *sheet;
 };
 
 struct game_display *init_display ( int mapsize )
@@ -45,50 +42,78 @@ struct game_display *init_display ( int mapsize )
         printf ( SDL_GetError () );
     }
 
-    display->ground = NULL;
-    display->ground = IMG_LoadTexture ( display->ren, "ground.png" );
-    display->wall = NULL;
-    display->wall = IMG_LoadTexture ( display->ren, "wall.png" );
-    display->pN = NULL;
-    display->pN = IMG_LoadTexture ( display->ren, "playerN.png" );
-    display->pS = NULL;
-    display->pS = IMG_LoadTexture ( display->ren, "playerS.png" );
-    display->pE = NULL;
-    display->pE = IMG_LoadTexture ( display->ren, "playerE.png" );
-    display->pW = NULL;
-    display->pW = IMG_LoadTexture ( display->ren, "playerW.png" );
-    display->goal = NULL;
-    display->goal = IMG_LoadTexture ( display->ren, "goal.png" );
-    display->dark1 = NULL;
-    display->dark1 = IMG_LoadTexture ( display->ren, "dark1.png");
-    display->dark2 = NULL;
-    display->dark2 = IMG_LoadTexture ( display->ren, "dark2.png");
+    display->sheet = NULL;
+    display->sheet = IMG_LoadTexture ( display->ren, "res/tile_sheet.xcf" );
 
     printf ( "completing init_display\n" );
 
     return display;
 }
 
-void apply_texture ( int x, int y, SDL_Renderer *ren, SDL_Texture *tex )
+void apply_texture ( int x, int y, SDL_Renderer *ren, SDL_Texture *tex, enum tile_image image )
 {
-    SDL_Rect pos;
-    pos.x = x;
-    pos.y = y;
-    pos.w = 16;
-    pos.h = 16;
+    int ts = 16;
 
-    SDL_RenderCopy ( ren, tex, NULL, &pos );
+    SDL_Rect pos;
+    pos.x = x * ts;
+    pos.y = y * ts;
+    pos.w = ts;
+    pos.h = ts;
+
+    SDL_Rect slice;
+    switch ( image )
+    {
+        case SPACE1:
+            slice.x = 1 * ts;
+            slice.y = 0 * ts;
+            break;
+        case WALL1:
+            slice.x = 2 * ts;
+            slice.y = 0 * ts;
+            break;
+        case DARK1:
+            slice.x = 3 * ts;
+            slice.y = 0 * ts;
+            break;
+        case DARK2:
+            slice.x = 4 * ts;
+            slice.y = 0 * ts;
+            break;
+        case GOAL1:
+            slice.x = 5 * ts;
+            slice.y = 0 * ts;
+            break;
+        case PN:
+            slice.x = 6 * ts;
+            slice.y = 0 * ts;
+            break;
+        case PS:
+            slice.x = 7 * ts;
+            slice.y = 0 * ts;
+            break;
+        case PE:
+            slice.x = 8 * ts;
+            slice.y = 0 * ts;
+            break;
+        case PW:
+            slice.x = 9 * ts;
+            slice.y = 0 * ts;
+            break;
+        default:
+            slice.x = 0 * ts;
+            slice.y = 0 * ts;
+            break;
+    }
+    slice.w = ts;
+    slice.h = ts;
+
+    SDL_RenderCopy ( ren, tex, &slice, &pos );
 
 }
 
 void destroy_display ( struct game_display *display )
 {
-    SDL_DestroyTexture ( display->wall );
-    SDL_DestroyTexture ( display->ground );
-    SDL_DestroyTexture ( display->pN );
-    SDL_DestroyTexture ( display->pS );
-    SDL_DestroyTexture ( display->pE );
-    SDL_DestroyTexture ( display->pW );
+    SDL_DestroyTexture ( display->sheet );
 
     SDL_DestroyRenderer ( display->ren );
     SDL_DestroyWindow ( display->win );
@@ -101,7 +126,7 @@ void destroy_display ( struct game_display *display )
 void update_display ( struct game_display *display, struct mazegame *game )
 {
     int x, y;
-    SDL_Texture *tex = NULL;
+    enum tile_image image;
 
     for ( x = 0; x < game->mapsize; x++ )
     {
@@ -110,40 +135,39 @@ void update_display ( struct game_display *display, struct mazegame *game )
             switch ( game->tiles[x][y].t )
             {
                 case WALL:
-                    tex = display->wall;
+                    image = WALL1;
                     break;
                 case SPACE:
-                    tex = display->ground;
+                    image = SPACE1;
                     break;
                 default:
                     break;
             }
             
-            apply_texture ( x * 16, y * 16, display->ren, tex );
+            apply_texture ( x, y, display->ren, display->sheet, image );
         }
     }
 
-    tex = NULL;
     switch ( game->player.d )
     {
         case NORTH:
-            tex = display->pN;
+            image = PN;
             break;
         case SOUTH:
-            tex = display->pS;
+            image = PS;
             break;
         case EAST:
-            tex = display->pE;
+            image = PE;
             break;
         case WEST:
-            tex = display->pW;
+            image = PW;
             break;
         default:
             break;
     }
-    apply_texture ( game->goal_position.x * 16, game->goal_position.y * 16, display->ren, display->goal );
+    apply_texture ( game->goal_position.x, game->goal_position.y, display->ren, display->sheet, GOAL1 );
 
-    apply_texture ( game->player.p.x * 16, game->player.p.y * 16, display->ren, tex );
+    apply_texture ( game->player.p.x, game->player.p.y, display->ren, display->sheet, image );
 
     for ( x = 0; x < game->mapsize; x++ )
     {
@@ -153,11 +177,13 @@ void update_display ( struct game_display *display, struct mazegame *game )
             {
                 if ( game->tiles[x][y].light < 1 )
                 {
-                    apply_texture ( x * 16, y * 16, display->ren, display->dark2 );
+                    image = DARK2;
+                    apply_texture ( x, y, display->ren, display->sheet, image );
                 }
                 else
                 {
-                    apply_texture ( x * 16, y * 16, display->ren, display->dark1 );
+                    image = DARK1;
+                    apply_texture ( x, y, display->ren, display->sheet, image );
                 }
             }
         }

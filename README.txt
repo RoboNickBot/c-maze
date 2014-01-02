@@ -14,6 +14,16 @@
  explaining the "story") but has an updated lighting algorithm that *doesn't*
  go through walls! (still needs work)
 
+ Dependancies:
+    
+    make, gcc, SDL2, SDL2_image
+
+ Installation:
+    
+    cd to the directory with the files and run make
+    
+    if building on Windows, copy the SDL dlls into the directory as well
+
  Objective:
     
     find the treasure
@@ -33,7 +43,7 @@
         to organize things.
 
     cleaner resources
-        putting images in a sprite-sheet, etc
+        putting source files in a src directory, etc.
 
     animations
 
