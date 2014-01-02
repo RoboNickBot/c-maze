@@ -13,7 +13,7 @@ int main ()
     struct mazegame game;
     struct game_display *display;
 
-    char *map_file_name = "mazeFile1.txt";
+    char *map_file_name = "mazes/mazeFile1.txt";
 
     enum tiletype *map;
     struct position start_pos;
