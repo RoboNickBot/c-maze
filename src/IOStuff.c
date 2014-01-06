@@ -5,8 +5,7 @@
 #include "SDL_image.h"
 
 #include "internals.h"
-
-enum tile_image { WALL1, SPACE1, ERROR, GOAL1, DARK1, DARK2, PN, PS, PE, PW };
+#include "image_key.h"
 
 struct game_display
 {
@@ -50,7 +49,7 @@ struct game_display *init_display ( int mapsize )
     return display;
 }
 
-void apply_texture ( int x, int y, SDL_Renderer *ren, SDL_Texture *tex, enum tile_image image )
+void apply_texture ( int x, int y, SDL_Renderer *ren, SDL_Texture *tex, enum image_key image )
 {
     int ts = 16;
 
@@ -61,49 +60,8 @@ void apply_texture ( int x, int y, SDL_Renderer *ren, SDL_Texture *tex, enum til
     pos.h = ts;
 
     SDL_Rect slice;
-    switch ( image )
-    {
-        case SPACE1:
-            slice.x = 1 * ts;
-            slice.y = 0 * ts;
-            break;
-        case WALL1:
-            slice.x = 2 * ts;
-            slice.y = 0 * ts;
-            break;
-        case DARK1:
-            slice.x = 3 * ts;
-            slice.y = 0 * ts;
-            break;
-        case DARK2:
-            slice.x = 4 * ts;
-            slice.y = 0 * ts;
-            break;
-        case GOAL1:
-            slice.x = 5 * ts;
-            slice.y = 0 * ts;
-            break;
-        case PN:
-            slice.x = 6 * ts;
-            slice.y = 0 * ts;
-            break;
-        case PS:
-            slice.x = 7 * ts;
-            slice.y = 0 * ts;
-            break;
-        case PE:
-            slice.x = 8 * ts;
-            slice.y = 0 * ts;
-            break;
-        case PW:
-            slice.x = 9 * ts;
-            slice.y = 0 * ts;
-            break;
-        default:
-            slice.x = 0 * ts;
-            slice.y = 0 * ts;
-            break;
-    }
+    slice.x = ( int ) image * ts;
+    slice.y = 0;
     slice.w = ts;
     slice.h = ts;
 
@@ -126,7 +84,7 @@ void destroy_display ( struct game_display *display )
 void update_display ( struct game_display *display, struct mazegame *game )
 {
     int x, y;
-    enum tile_image image;
+    enum image_key image;
 
     for ( x = 0; x < game->mapsize; x++ )
     {
