@@ -84,3 +84,59 @@ struct maze* read_map ( char *map_file_name )
 
     return new_maze_pointer ( size, tiles, start_position, goal_position );
 }
+
+void write_map ( struct maze *maze, char *map_file_name )
+{
+    int x;
+    int y;
+    int s = maze->size;
+    int c;
+
+    FILE *file;
+
+    file = fopen ( map_file_name, "w" );
+    if ( file == NULL )
+    {
+        printf ( "File failed to open!!\n" );
+    }
+
+    for ( y = 0; y < s; y++ )
+    {
+        for ( x = 0; x < s; x++ )
+        {
+            switch ( maze->tiles[x * s + y].t )
+            {
+                case SPACE:
+                    c = ( int ) '.';
+                    break;
+                case WALL:
+                    c = ( int ) 'x';
+                    break;
+                default:
+                    c = ( int ) 'E';
+                    break;
+            }
+            if ( equal_pos ( maze->start_position, new_position ( x, y ) ) )
+            {
+                c = ( int ) 'p';
+            }
+            else if ( equal_pos ( maze->goal_position, new_position ( x, y ) ) )
+            {
+                c = ( int ) 'g';
+            }
+            
+            fputc ( c, file );
+        }
+        if ( y < s-1 )
+        {
+            c = ( int ) '\n';
+            fputc ( c, file );
+        }
+    }
+
+    if ( fclose ( file ) != 0 )
+    {
+        printf ( "error in closing file\n" );
+    }
+    printf ( "file IO completed\n" );
+}
