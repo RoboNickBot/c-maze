@@ -8,48 +8,26 @@ struct position new_position ( int x, int y );
 struct position copy_position ( struct position other );
 struct player new_player ( struct position start_pos );
 struct mazetile new_mazetile ( enum tiletype type, int x, int y );
+void destroy_maze ( struct maze *maze );
 
-struct mazegame new_mazegame ( int mapsize, enum tiletype *tiles, struct position start_pos, struct position goal_pos )
+struct mazegame new_mazegame ( struct maze *maze )
 {
-    int x;
-    int y;
     struct mazegame game;
     
-    game.player = new_player ( start_pos );
-    game.goal_position = copy_position ( goal_pos );
-    game.mapsize = mapsize;
+    game.player = new_player ( maze->start_position );
+    game.maze = maze;
     
-    /* I need to malloc a block of mapsize pointers, and then malloc a block of mapsize mazetiles at each of those pointers
-     * 
-     * All of this then goes in game.tiles
-     */
-    printf ( "about to build the tile structure\n" );
-    game.tiles = malloc ( sizeof ( struct mazetile * ) * mapsize );
-    for ( x = 0; x < mapsize; x++ )
-    {
-        game.tiles[x] = malloc ( sizeof ( struct mazetile ) * mapsize );
-        for ( y = 0; y < mapsize; y++ )
-        {
-            game.tiles[x][y] = new_mazetile ( tiles[x*mapsize + y], x, y );
-        }
-    }
-    printf ( "freeing proto-structure\n" );
-    free ( tiles );
-    printf ( "finished the tile structure\n" );
-
     return game;
 }
 
-void destroy_mazegame ( struct mazegame game )
+void destroy_mazegame ( struct mazegame *game )
 {
-    int x;
-
-    for ( x = 0; x < game.mapsize; x++ )
-    {
-        free ( game.tiles[x] );
-    }
-
-    free ( game.tiles );
+    destroy_maze ( game->maze );
+    free ( game->maze );
+}
+void destroy_maze ( struct maze *maze )
+{
+    free ( maze->tiles );
 }
 
 struct player new_player ( struct position start_pos )
@@ -59,6 +37,17 @@ struct player new_player ( struct position start_pos )
     player.d = SOUTH;
     
     return player;
+}
+struct maze* new_maze_pointer ( int size, struct mazetile *tiles, struct position start_position, struct position goal_position )
+{
+    struct maze *maze;
+    maze = malloc ( sizeof ( struct maze ) );
+    maze->size = size;
+    maze->tiles = tiles;
+    maze->start_position = start_position;
+    maze->goal_position = goal_position;
+
+    return maze;
 }
 
 struct mazetile new_mazetile ( enum tiletype type, int x, int y )
@@ -96,22 +85,24 @@ void reset_light ( struct mazegame *game )
 {
     int x;
     int y;
-    for ( x = 0; x < game->mapsize; x++ )
+    int s = game->maze->size;
+    for ( x = 0; x < s; x++ )
     {
-        for ( y = 0; y < game->mapsize; y++ )
+        for ( y = 0; y < s; y++ )
         {
-            game->tiles[x][y].light = 0;
+            game->maze->tiles[ x * s + y ].light = 0;
         }
     }
 }
 
-void recurse_light ( float value, struct mazetile **tiles, enum direction d, enum orientation o, struct position p )
+void recurse_light ( float value, struct maze *maze, enum direction d, enum orientation o, struct position p )
 {
     /*printf ( "starting recurse light with %f\n", value );*/
     float divisor = 2.0;
     float side_divisor = 3.0;
-    tiles[p.x][p.y].light += value;
-    if ( value >= 1.0 && tiles[p.x][p.y].t == SPACE )
+    int s = maze->size;
+    maze->tiles[p.x * s + p.y].light += value;
+    if ( value >= 1.0 && maze->tiles[p.x * s + p.y].t == SPACE )
     {
         switch ( o )
         {
@@ -119,24 +110,24 @@ void recurse_light ( float value, struct mazetile **tiles, enum direction d, enu
                 switch ( d )
                 {
                     case NORTH:
-                        recurse_light ( value / divisor, tiles, d, STRAIGHT, new_position ( p.x, p.y-1 ));
-                        recurse_light ( value / side_divisor, tiles, d, LEFT, new_position ( p.x-1, p.y-1 ));
-                        recurse_light ( value / side_divisor, tiles, d, RIGHT, new_position ( p.x+1, p.y-1 ));
+                        recurse_light ( value / divisor, maze, d, STRAIGHT, new_position ( p.x, p.y-1 ));
+                        recurse_light ( value / side_divisor, maze, d, LEFT, new_position ( p.x-1, p.y-1 ));
+                        recurse_light ( value / side_divisor, maze, d, RIGHT, new_position ( p.x+1, p.y-1 ));
                         break;
                     case SOUTH:
-                        recurse_light ( value / divisor, tiles, d, STRAIGHT, new_position ( p.x, p.y+1 ));
-                        recurse_light ( value / side_divisor, tiles, d, RIGHT, new_position ( p.x-1, p.y+1 ));
-                        recurse_light ( value / side_divisor, tiles, d, LEFT, new_position ( p.x+1, p.y+1 ));
+                        recurse_light ( value / divisor, maze, d, STRAIGHT, new_position ( p.x, p.y+1 ));
+                        recurse_light ( value / side_divisor, maze, d, RIGHT, new_position ( p.x-1, p.y+1 ));
+                        recurse_light ( value / side_divisor, maze, d, LEFT, new_position ( p.x+1, p.y+1 ));
                         break;
                     case EAST:
-                        recurse_light ( value / divisor, tiles, d, STRAIGHT, new_position ( p.x+1, p.y ));
-                        recurse_light ( value / side_divisor, tiles, d, LEFT, new_position ( p.x+1, p.y-1 ));
-                        recurse_light ( value / side_divisor, tiles, d, RIGHT, new_position ( p.x+1, p.y+1 ));
+                        recurse_light ( value / divisor, maze, d, STRAIGHT, new_position ( p.x+1, p.y ));
+                        recurse_light ( value / side_divisor, maze, d, LEFT, new_position ( p.x+1, p.y-1 ));
+                        recurse_light ( value / side_divisor, maze, d, RIGHT, new_position ( p.x+1, p.y+1 ));
                         break;
                     case WEST:
-                        recurse_light ( value / divisor, tiles, d, STRAIGHT, new_position ( p.x-1, p.y ));
-                        recurse_light ( value / side_divisor, tiles, d, RIGHT, new_position ( p.x-1, p.y-1 ));
-                        recurse_light ( value / side_divisor, tiles, d, LEFT, new_position ( p.x-1, p.y+1 ));
+                        recurse_light ( value / divisor, maze, d, STRAIGHT, new_position ( p.x-1, p.y ));
+                        recurse_light ( value / side_divisor, maze, d, RIGHT, new_position ( p.x-1, p.y-1 ));
+                        recurse_light ( value / side_divisor, maze, d, LEFT, new_position ( p.x-1, p.y+1 ));
                         break;
                     default:
                         break;
@@ -146,16 +137,16 @@ void recurse_light ( float value, struct mazetile **tiles, enum direction d, enu
                 switch ( d )
                 {
                     case NORTH:
-                        recurse_light ( value / side_divisor, tiles, d, LEFT, new_position ( p.x-1, p.y-1 ));
+                        recurse_light ( value / side_divisor, maze, d, LEFT, new_position ( p.x-1, p.y-1 ));
                         break;
                     case SOUTH:
-                        recurse_light ( value / side_divisor, tiles, d, LEFT, new_position ( p.x+1, p.y+1 ));
+                        recurse_light ( value / side_divisor, maze, d, LEFT, new_position ( p.x+1, p.y+1 ));
                         break;
                     case EAST:
-                        recurse_light ( value / side_divisor, tiles, d, LEFT, new_position ( p.x+1, p.y-1 ));
+                        recurse_light ( value / side_divisor, maze, d, LEFT, new_position ( p.x+1, p.y-1 ));
                         break;
                     case WEST:
-                        recurse_light ( value / side_divisor, tiles, d, LEFT, new_position ( p.x-1, p.y+1 ));
+                        recurse_light ( value / side_divisor, maze, d, LEFT, new_position ( p.x-1, p.y+1 ));
                         break;
                     default:
                         break;
@@ -165,16 +156,16 @@ void recurse_light ( float value, struct mazetile **tiles, enum direction d, enu
                 switch ( d )
                 {
                     case NORTH:
-                        recurse_light ( value / side_divisor, tiles, d, RIGHT, new_position ( p.x+1, p.y-1 ));
+                        recurse_light ( value / side_divisor, maze, d, RIGHT, new_position ( p.x+1, p.y-1 ));
                         break;
                     case SOUTH:
-                        recurse_light ( value / side_divisor, tiles, d, RIGHT, new_position ( p.x-1, p.y+1 ));
+                        recurse_light ( value / side_divisor, maze, d, RIGHT, new_position ( p.x-1, p.y+1 ));
                         break;
                     case EAST:
-                        recurse_light ( value / side_divisor, tiles, d, RIGHT, new_position ( p.x+1, p.y+1 ));
+                        recurse_light ( value / side_divisor, maze, d, RIGHT, new_position ( p.x+1, p.y+1 ));
                         break;
                     case WEST:
-                        recurse_light ( value / side_divisor, tiles, d, RIGHT, new_position ( p.x-1, p.y-1 ));
+                        recurse_light ( value / side_divisor, maze, d, RIGHT, new_position ( p.x-1, p.y-1 ));
                         break;
                     default:
                         break;
@@ -189,12 +180,13 @@ void recurse_light ( float value, struct mazetile **tiles, enum direction d, enu
 
 void update_game ( struct mazegame *g, enum command player_move )
 {
+    int s = g->maze->size;
     switch ( player_move )
     {
         case MOVE_N:
             if ( g->player.d == NORTH )
             {
-                if ( g->tiles[g->player.p.x][g->player.p.y - 1].t == SPACE )
+                if ( g->maze->tiles[g->player.p.x * s + g->player.p.y - 1].t == SPACE )
                 {
                     g->player.p.y--;
                 }
@@ -207,7 +199,7 @@ void update_game ( struct mazegame *g, enum command player_move )
         case MOVE_S:
             if ( g->player.d == SOUTH )
             {
-                if ( g->tiles[g->player.p.x][g->player.p.y + 1].t == SPACE )
+                if ( g->maze->tiles[g->player.p.x * s + g->player.p.y + 1].t == SPACE )
                 {
                     g->player.p.y++;
                 }
@@ -220,7 +212,7 @@ void update_game ( struct mazegame *g, enum command player_move )
         case MOVE_W:
             if ( g->player.d == WEST )
             {
-                if ( g->tiles[g->player.p.x - 1][g->player.p.y].t == SPACE )
+                if ( g->maze->tiles[ ( g->player.p.x - 1 ) * s + g->player.p.y].t == SPACE )
                 {
                     g->player.p.x--;
                 }
@@ -233,7 +225,7 @@ void update_game ( struct mazegame *g, enum command player_move )
         case MOVE_E:
             if ( g->player.d == EAST )
             {
-                if ( g->tiles[g->player.p.x + 1][g->player.p.y].t == SPACE )
+                if ( g->maze->tiles[ ( g->player.p.x + 1 ) * s + g->player.p.y].t == SPACE )
                 {
                     g->player.p.x++;
                 }
@@ -248,5 +240,5 @@ void update_game ( struct mazegame *g, enum command player_move )
     }
 
     reset_light ( g );
-    recurse_light ( 10, g->tiles, g->player.d, STRAIGHT, g->player.p );
+    recurse_light ( 10, g->maze, g->player.d, STRAIGHT, g->player.p );
 }

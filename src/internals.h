@@ -24,17 +24,24 @@ struct mazetile
     float light;
     struct position p;
 };
+struct maze
+{
+    struct mazetile *tiles;
+    struct position start_position;
+    struct position goal_position;
+    int size;
+};
 struct mazegame
 {
     struct player player;
-    struct mazetile **tiles;
-    struct position goal_position;
-    int mapsize;
+    struct maze *maze;
 };
 
 
-struct mazegame new_mazegame ( int mapsize, enum tiletype *tiles, struct position start_pos, struct position goal_pos );
+struct mazegame new_mazegame ( struct maze *maze );
 struct position new_position ( int x, int y );
+struct mazetile new_mazetile ( enum tiletype type, int x, int y );
+struct maze* new_maze_pointer ( int size, struct mazetile *tiles, struct position start_position, struct position goal_position );
 void update_game ( struct mazegame *g, enum command player_move );
 bool equal_pos ( struct position a, struct position b );
 void destroy_mazegame ();

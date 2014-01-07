@@ -15,30 +15,25 @@ int main ()
 
     char *map_file_name = "mazes/mazeFile1.txt";
 
-    enum tiletype *map;
-    struct position start_pos;
-    struct position goal_pos;
+    struct maze *maze;
 
-    int x;
-    int mapsize = 30;
     int game_running = 1;
     enum command command;
-    enum tiletype test;
 
-    map = read_map ( mapsize, map_file_name, &start_pos, &goal_pos );
+    maze = read_map ( map_file_name );
 
     printf ( "escaped the read_map\n" );
     
-    game = new_mazegame ( mapsize, map, start_pos, goal_pos );
+    game = new_mazegame ( maze );
 
     printf ( "initializing display" );
-    display = init_display ( mapsize );
+    display = init_display ( game.maze->size );
 
     while ( game_running )
     {
         update_display ( display, &game );
         get_command ( &command );
-        if ( command == QUIT || equal_pos ( game.player.p, goal_pos ) )
+        if ( command == QUIT || equal_pos ( game.player.p, game.maze->goal_position ) )
         {
             game_running = 0;
         }
@@ -49,7 +44,7 @@ int main ()
     }
 
     destroy_display ( display );
-    destroy_mazegame ( game );
+    destroy_mazegame ( &game );
 
     return 0;
 

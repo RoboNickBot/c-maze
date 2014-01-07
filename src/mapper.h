@@ -3,6 +3,8 @@
 
 #include "internals.h"
 
-enum tiletype*  read_map ( int mapsize, char *map_file_name, struct position *p_pos, struct position *g_pos );
+struct maze* read_map ( char *map_file_name );
+
+/* void write_map ( struct maze *maze, char *map_file_name ); */
 
 #endif

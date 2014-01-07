@@ -84,13 +84,14 @@ void destroy_display ( struct game_display *display )
 void update_display ( struct game_display *display, struct mazegame *game )
 {
     int x, y;
+    int s = game->maze->size;
     enum image_key image;
 
-    for ( x = 0; x < game->mapsize; x++ )
+    for ( x = 0; x < s; x++ )
     {
-        for ( y = 0; y < game->mapsize; y++ )
+        for ( y = 0; y < s; y++ )
         {
-            switch ( game->tiles[x][y].t )
+            switch ( game->maze->tiles[x * s + y].t )
             {
                 case WALL:
                     image = WALL1;
@@ -123,17 +124,17 @@ void update_display ( struct game_display *display, struct mazegame *game )
         default:
             break;
     }
-    apply_texture ( game->goal_position.x, game->goal_position.y, display->ren, display->sheet, GOAL1 );
+    apply_texture ( game->maze->goal_position.x, game->maze->goal_position.y, display->ren, display->sheet, GOAL1 );
 
     apply_texture ( game->player.p.x, game->player.p.y, display->ren, display->sheet, image );
 
-    for ( x = 0; x < game->mapsize; x++ )
+    for ( x = 0; x < s; x++ )
     {
-        for ( y = 0; y < game->mapsize; y++ )
+        for ( y = 0; y < s; y++ )
         {
-            if ( game->tiles[x][y].light < 3 )
+            if ( game->maze->tiles[x * s + y].light < 3 )
             {
-                if ( game->tiles[x][y].light < 1 )
+                if ( game->maze->tiles[x * s + y].light < 1 )
                 {
                     image = DARK2;
                     apply_texture ( x, y, display->ren, display->sheet, image );
