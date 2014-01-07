@@ -1,7 +1,7 @@
 
  //////////////////////////////
  //                          //
- //       C - Maze           //
+ //         C - Maze         //
  //                          //
  //////////////////////////////
 
@@ -18,11 +18,11 @@
     
     make, gcc, SDL2, SDL2_image
 
- Installation:
+ Installation/Build:
     
-    cd to the directory with the files and run make
+    on Unix-likes, cd to the directory with the files and run make
     
-    if building on Windows, copy the SDL dlls into the directory as well
+    if building on Windows.. ?  I don't really know Windows development
 
  Objective:
     
@@ -41,9 +41,6 @@
     cleaner code
         This is the first thing I've written in C, and I had no idea how
         to organize things.
-
-    cleaner resources
-        putting source files in a src directory, etc.
 
     animations
 
