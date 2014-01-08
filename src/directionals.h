@@ -10,10 +10,11 @@ struct DR_position
     int y;
 };
 
+
 struct DR_position DR_new_position ( int x, int y );
-int equal_pos ( struct DR_position a, struct DR_position b );
+int DR_equal_pos ( struct DR_position a, struct DR_position b );
 
 struct DR_position DR_get_adj ( struct DR_position this_pos, enum DR_direction dir );
-enum DR_direction DR_get_rel ( enum DR_direction this_dir, enum DR_orientation relative_orientation );
+enum DR_direction DR_get_rel ( enum DR_direction this_dir, enum DR_orientation offset );
 
 #endif

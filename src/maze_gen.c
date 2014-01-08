@@ -3,6 +3,7 @@
 
 #include "maze_gen.h"
 #include "internals.h"
+#include "directionals.h"
 
 struct probs
 {
@@ -13,15 +14,15 @@ struct probs
 
 struct path_head
 {
-    struct position p;
-    enum direction d;
+    struct DR_position p;
+    enum DR_direction d;
     double g; /* growth probability */
     int still_space;
 
     struct path_head *next;
 };
 
-struct path_head *new_path ( struct position p, enum direction d, double g )
+struct path_head *new_path ( struct DR_position p, enum DR_direction d, double g )
 {
     struct path_head *path;
     printf ( "empty path pointer created\n" );
@@ -54,188 +55,101 @@ void destroy_paths ( struct path_head *last )
     if ( last->next != NULL )
     {
         destroy_paths ( last->next );
-        free ( last->next );
-    }
-}
-
-struct position get_adj ( struct position pos, enum direction d )
-{
-    struct position adj;
-    switch ( d )
-    {
-        case NORTH:
-            adj = new_position ( pos.x, pos.y-1 );
-            break;
-        case SOUTH:
-            adj = new_position ( pos.x, pos.y+1 );
-        case EAST:
-            adj = new_position ( pos.x+1, pos.y );
-            break;
-        case WEST:
-            adj = new_position ( pos.x-1, pos.y );
-            break;
-        default:
-            break;
     }
 
-    return adj;
-}
-enum tiletype get_tiletype ( struct mazetile *tiles, int size, struct position pos )
-{
-    return tiles[pos.x * size + pos.y].t;
-}
-enum direction get_opposite ( enum direction d )
-{
-    enum direction o;
-    switch ( d )
-    {
-        case NORTH:
-            o = SOUTH;
-            break;
-        case SOUTH:
-            o = NORTH;
-            break;
-        case EAST:
-            o = WEST;
-            break;
-        case WEST:
-            o = EAST;
-            break;
-        default:
-            break;
-    }
-    return o;
-}
-enum direction get_side ( enum direction d, enum orientation s )
-{
-    enum direction o;
-    switch ( s )
-    {
-        case LEFT:
-    switch ( d )
-    {
-        case NORTH:
-            o = WEST;
-            break;
-        case SOUTH:
-            o = EAST;
-            break;
-        case EAST:
-            o = NORTH;
-            break;
-        case WEST:
-            o = SOUTH;
-            break;
-        default:
-            break;
-    }
-            break;
-        case RIGHT:
-    switch ( d )
-    {
-        case NORTH:
-            o = EAST;
-            break;
-        case SOUTH:
-            o = WEST;
-            break;
-        case EAST:
-            o = SOUTH;
-            break;
-        case WEST:
-            o = NORTH;
-            break;
-        default:
-            break;
-    }
-            break;
-        default:
-            o = d;
-    }
-    return o;
+    free ( last );
 }
 
-int check_space ( struct mazetile *tiles, int size, struct position pos, enum direction d )
+int check_space ( struct mazetile *tiles, int size, struct DR_position pos, enum DR_direction d )
 {
+    int result = 1;
+    int x;
+    enum DR_direction check_dir;
+
     if ( pos.x == 0 || pos.x == size-1 || pos.y == 0 || pos.y == size-1 )
     {
-        return 0;
-    }
-    enum tiletype n, s, e, w;
-    enum direction o = get_opposite ( d );
-    n = get_tiletype ( tiles, size, get_adj ( pos, NORTH ) );
-    s = get_tiletype ( tiles, size, get_adj ( pos, SOUTH ) );
-    e = get_tiletype ( tiles, size, get_adj ( pos, EAST ) );
-    w = get_tiletype ( tiles, size, get_adj ( pos, WEST ) );
-
-    if ( ! ( n == WALL || o == NORTH && s == WALL || o == SOUTH && e == WALL || o == EAST && w == WALL || o == WEST ) )
-    {
-        return 0;
-    }
-
-    return 1;
-}
-int check_all ( struct mazetile *tiles, int size, struct position pos, enum direction d )
-{
-    int f, l, r;
-
-    f = check_space ( tiles, size, get_adj ( pos, d ), d );
-    l = check_space ( tiles, size, get_adj ( pos, get_side ( d, LEFT ) ), get_side ( d, LEFT ) );
-    r = check_space ( tiles, size, get_adj ( pos, get_side ( d, RIGHT ) ), get_side ( d, RIGHT ) );
-
-    if ( f || l || r )
-    {
-        return 1;
+        result = 0;
     }
     else
     {
-        return 0;
+        for ( x = 0; x < 5; x++ )
+        {
+            check_dir = DR_get_rel ( DR_get_rel ( d, LEFT ), x );
+            if ( get_tiletype ( tiles, size, DR_get_adj ( pos, check_dir ) ) != WALL )
+            {
+                result = 0;
+            }
+        }
     }
+
+    return result;
+}
+int check_all ( struct mazetile *tiles, int size, struct DR_position pos, enum DR_direction d )
+{
+    int result = 0;
+    int f, l, r;
+
+    f = check_space ( tiles, size, DR_get_adj ( pos, d ), d );
+    l = check_space ( tiles, size, DR_get_adj ( pos, DR_get_rel ( d, LEFT ) ), DR_get_rel ( d, LEFT ) );
+    r = check_space ( tiles, size, DR_get_adj ( pos, DR_get_rel ( d, RIGHT ) ), DR_get_rel ( d, RIGHT ) );
+
+    if ( f || l || r )
+    {
+        result = 1;
+    }
+
+    return result;
 }
 
 int advance_path ( struct mazetile *tiles, int size, struct path_head *last, struct probs probs )
 {
-    enum orientation o;
-    enum direction dir;
-    struct position try_pos;
+    enum DR_orientation o;
+    enum DR_direction dir;
+    struct DR_position try_pos;
     double r;
-    if ( ! check_all ( tiles, size, last->p, last->d ) )
-    {
-        last->still_space = 0;
-        return 0;
-    }
+    int result = 0;
 
-    r = rand () / ( double ) RAND_MAX;
-    if ( r < last->g )
+    if ( check_all ( tiles, size, last->p, last->d ) )
     {
+        result = 1;
+
         r = rand () / ( double ) RAND_MAX;
-        if ( r < probs.twisty )
-        {
-            o = STRAIGHT;
-        }
-        else
+        if ( r < last->g )
         {
             r = rand () / ( double ) RAND_MAX;
-            if ( r < probs.swirly )
+            if ( r < probs.twisty )
             {
-                o = RIGHT;
+                o = FRONT;
             }
             else
             {
-                o = LEFT;
+                r = rand () / ( double ) RAND_MAX;
+                if ( r < probs.swirly )
+                {
+                    o = RIGHT;
+                }
+                else
+                {
+                    o = LEFT;
+                }
+            }
+            dir = DR_get_rel ( last->d, o );
+            try_pos = DR_get_adj ( last->p, dir );
+    
+            if ( check_space ( tiles, size, try_pos, dir ) )
+            {
+                tiles[try_pos.x * size + try_pos.y].t = SPACE;
+                last->p = try_pos;
+                last->d = dir;
             }
         }
-        dir = get_side ( last->d, o );
-        try_pos = get_adj ( last->p, dir );
-
-        if ( check_space ( tiles, size, try_pos, dir ) )
-        {
-            tiles[try_pos.x * size + try_pos.y].t = SPACE;
-            last->p = try_pos;
-            last->d = dir;
-        }
     }
-    return 1;
+    else
+    {
+        last->still_space = 0;
+    }
+
+    return result;
 }
         
         
@@ -253,14 +167,7 @@ int iterate_paths (struct mazetile *tiles, int size, struct path_head *last, str
         j = iterate_paths ( tiles, size, last->next, probs );
     }
 
-    if ( i || j )
-    {
-        return 1;
-    }
-    else
-    {
-        return 0;
-    }
+    return ( i || j );
 }
 
 
@@ -273,8 +180,8 @@ struct maze *generate_maze ( int size )
     int space = 1;
     struct mazetile *tiles;
     struct probs probs;
-    struct position start_position;
-    struct position goal_position;
+    struct DR_position start_position;
+    struct DR_position goal_position;
     struct path_head *root;
 
     probs.twisty = 0.7;
@@ -301,8 +208,9 @@ struct maze *generate_maze ( int size )
 
     x = ( int ) ( rand () / ( double ) RAND_MAX * ( ( double ) size - 6 ) ) + 3;
     y = ( int ) ( rand () / ( double ) RAND_MAX * ( ( double ) size - 6 ) ) + 3;
-    start_position = new_position ( x, y );
+    start_position = DR_new_position ( x, y );
     printf ( "Starting position at %d, %d\n", x, y );
+    tiles[x * size + y].t = SPACE;
 
     root = new_path ( start_position, SOUTH, 0.8 );
     printf ( "root created\n" );
@@ -315,7 +223,6 @@ struct maze *generate_maze ( int size )
     goal_position = root->p;
 
     destroy_paths ( root );
-    free ( root );
 
     return new_maze_pointer ( size, tiles, start_position, goal_position );
 }

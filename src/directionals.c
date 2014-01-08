@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "directionals.h"
 
 struct DR_position DR_new_position ( int x, int y )
@@ -51,15 +53,27 @@ struct DR_position DR_get_adj ( struct DR_position this_pos, enum DR_direction d
     return result;
 }
 
-enum DR_direction DR_get_rel ( enum DR_direction this_dir, enum DR_orientation relative_orientation )
+enum DR_direction DR_new_direction ( int value )
+{
+    while ( value < 0 || value >= FULL_CYCLE )
+    {
+        if ( value < 0 )
+        {
+            value += FULL_CYCLE;
+        }
+        if ( value >= FULL_CYCLE )
+        {
+            value -= FULL_CYCLE;
+        }
+    }
+
+    return value;
+}
+
+enum DR_direction DR_get_rel ( enum DR_direction this_dir, enum DR_orientation offset )
 {
     enum DR_direction result;
-    result = this_dir + relative_orientation;
-
-    if ( result >= FULL_CYCLE )
-    {
-        result -= FULL_CYCLE;
-    }
+    result = DR_new_direction ( this_dir + offset );
 
     return result;
 }
