@@ -22,18 +22,47 @@ struct path_head
     struct path_head *next;
 };
 
+int count_paths ( struct path_head *last )
+{
+    int c;
+
+    if ( last->next == NULL )
+    {
+        c = 0;
+    }
+    else
+    {
+        c = count_paths ( last->next );
+    }
+
+    return c + 1;
+}
+
+struct path_head *get_path ( struct path_head *last, int i )
+{
+    struct path_head *result;
+
+    if ( i <= 0 )
+    {
+        result = last;
+    }
+    else
+    {
+        result = get_path ( last->next, i-1 );
+    }
+
+    return result;
+}
+
 struct path_head *new_path ( struct DR_position p, enum DR_direction d, double g )
 {
     struct path_head *path;
-    printf ( "empty path pointer created\n" );
     path = malloc ( sizeof ( struct path_head ) );
-    printf ( "path_head allocated\n" );
     path->p = p;
     path->d = d;
     path->g = g;
     path->still_space = 1;
     path->next = NULL;
-    printf ( "fields filled\n" );
 
     return path;
 }
@@ -100,6 +129,81 @@ int check_all ( struct mazetile *tiles, int size, struct DR_position pos, enum D
 
     return result;
 }
+int try_move ( struct mazetile *tiles, int size, struct path_head *last, struct DR_position try_pos, enum DR_direction dir )
+{
+    int result = 0;
+
+    if ( check_space ( tiles, size, try_pos, dir ) )
+    {
+        tiles[try_pos.x * size + try_pos.y].t = SPACE;
+        last->p = try_pos;
+        last->d = dir;
+        result = 1;
+    }
+
+    return result;
+}
+
+void try_branch ( struct mazetile *tiles, int size, struct path_head *last, enum DR_orientation o, struct probs probs )
+{
+    double r;
+    int i;
+    struct path_head *new_branch;
+
+    for ( i = 0; i < 2; i++ )
+    {
+    new_branch = NULL;
+    r = rand () / ( double ) RAND_MAX;
+    if ( r < probs.branchy )
+    {
+        r = rand () / ( double ) RAND_MAX;
+        switch ( i )
+        {
+            case 0:
+        switch ( o )
+        {
+            case FRONT:
+                new_branch = new_path ( last->p, DR_get_rel ( last->d, RIGHT ), r );
+                break;
+            case LEFT:
+                new_branch = new_path ( last->p, DR_get_rel ( last->d, FRONT ), r );
+                break;
+            case RIGHT:
+                new_branch = new_path ( last->p, DR_get_rel ( last->d, LEFT ), r );
+                break;
+            default:
+                break;
+        }
+                break;
+            case 1:
+        switch ( o )
+        {
+            case FRONT:
+                new_branch = new_path ( last->p, DR_get_rel ( last->d, LEFT ), r );
+                break;
+            case LEFT:
+                new_branch = new_path ( last->p, DR_get_rel ( last->d, RIGHT ), r );
+                break;
+            case RIGHT:
+                new_branch = new_path ( last->p, DR_get_rel ( last->d, FRONT ), r );
+                break;
+            default:
+                break;
+        }
+                break;
+            default:
+                break;
+        }
+        if ( try_move ( tiles, size, new_branch, DR_get_adj ( new_branch->p, new_branch->d ), new_branch->d ) )
+        {
+            add_path ( last, new_branch );
+            printf ( "added path at %d, %d with direction %d\n", new_branch->p.x, new_branch->p.y, new_branch->d );
+        }
+    }
+    }
+}
+
+
 
 int advance_path ( struct mazetile *tiles, int size, struct path_head *last, struct probs probs )
 {
@@ -136,12 +240,9 @@ int advance_path ( struct mazetile *tiles, int size, struct path_head *last, str
             dir = DR_get_rel ( last->d, o );
             try_pos = DR_get_adj ( last->p, dir );
     
-            if ( check_space ( tiles, size, try_pos, dir ) )
-            {
-                tiles[try_pos.x * size + try_pos.y].t = SPACE;
-                last->p = try_pos;
-                last->d = dir;
-            }
+            try_branch ( tiles, size, last, o, probs );
+            try_move ( tiles, size, last, try_pos, dir );
+
         }
     }
     else
@@ -215,12 +316,18 @@ struct maze *generate_maze ( int size )
     root = new_path ( start_position, SOUTH, 0.8 );
     printf ( "root created\n" );
 
-    while ( space )
+    x=0;
+    while ( space && x < 5000 )
     {
         space = iterate_paths ( tiles, size, root, probs );
+        x++;
     }
 
-    goal_position = root->p;
+    x = ( int ) ( rand () / ( double ) RAND_MAX * ( ( double ) count_paths ( root ) ) );
+
+    goal_position = get_path ( root, x-1 )->p;
+
+    printf ( "finished, destroying paths\n" );
 
     destroy_paths ( root );
 
