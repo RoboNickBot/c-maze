@@ -8,6 +8,10 @@ struct DR_position DR_new_position ( int x, int y )
     
     return pos;
 }
+int DR_equal_pos ( struct DR_position a, struct DR_position b )
+{
+    return ( a.x == b.x && a.y == b.y );
+}
 
 struct DR_position DR_get_adj ( struct DR_position this_pos, enum DR_direction dir )
 {

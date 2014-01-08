@@ -5,6 +5,7 @@
 #include "SDL_image.h"
 
 #include "internals.h"
+#include "directionals.h"
 #include "image_key.h"
 
 struct game_display
@@ -91,7 +92,7 @@ void update_display ( struct game_display *display, struct mazegame *game )
     {
         for ( y = 0; y < s; y++ )
         {
-            switch ( game->maze->tiles[x * s + y].t )
+            switch ( get_tiletype ( game->maze->tiles, game->maze->size, DR_new_position ( x, y ) ) )
             {
                 case WALL:
                     image = WALL1;

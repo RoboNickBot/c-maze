@@ -2,14 +2,15 @@
 #include <stdio.h>
 
 #include "internals.h"
+#include "directionals.h"
 #include "mapper.h"
 
 struct maze* read_map ( char *map_file_name )
 {
     int size = 0;
     struct mazetile *tiles;
-    struct position start_position;
-    struct position goal_position;
+    struct DR_position start_position;
+    struct DR_position goal_position;
 
     FILE *file;
     int x = 0;
@@ -56,11 +57,11 @@ struct maze* read_map ( char *map_file_name )
                         break;
                     case 'p':
                         tiles[x * size + y] = new_mazetile ( SPACE, x, y );
-                        start_position = new_position ( x, y );
+                        start_position = DR_new_position ( x, y );
                         break;
                     case 'g':
                         tiles[x * size + y] = new_mazetile ( SPACE, x, y );
-                        goal_position = new_position ( x, y );
+                        goal_position = DR_new_position ( x, y );
                         break;
                     default:
                         printf ( "Invalid map character\n" );
@@ -116,11 +117,11 @@ void write_map ( struct maze *maze, char *map_file_name )
                     c = ( int ) 'E';
                     break;
             }
-            if ( equal_pos ( maze->start_position, new_position ( x, y ) ) )
+            if ( DR_equal_pos ( maze->start_position, DR_new_position ( x, y ) ) )
             {
                 c = ( int ) 'p';
             }
-            else if ( equal_pos ( maze->goal_position, new_position ( x, y ) ) )
+            else if ( DR_equal_pos ( maze->goal_position, DR_new_position ( x, y ) ) )
             {
                 c = ( int ) 'g';
             }

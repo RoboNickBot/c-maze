@@ -3,6 +3,7 @@
 #include <stdbool.h>
 
 #include "internals.h"
+#include "directionals.h"
 #include "IOStuff.h"
 #include "mapper.h"
 
@@ -33,7 +34,7 @@ int main ()
     {
         update_display ( display, &game );
         get_command ( &command );
-        if ( command == QUIT || equal_pos ( game.player.p, game.maze->goal_position ) )
+        if ( command == QUIT || DR_equal_pos ( game.player.p, game.maze->goal_position ) )
         {
             game_running = 0;
         }
