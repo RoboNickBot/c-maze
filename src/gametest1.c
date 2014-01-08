@@ -6,6 +6,7 @@
 #include "directionals.h"
 #include "IOStuff.h"
 #include "mapper.h"
+#include "maze_gen.h"
 
 void print_info ( struct mazegame game );
 
@@ -14,14 +15,15 @@ int main ()
     struct mazegame game;
     struct game_display *display;
 
-    char *map_file_name = "mazes/mazeFile1.txt";
+    /* char *map_file_name = "mazes/mazeFile1.txt"; */
 
     struct maze *maze;
 
     int game_running = 1;
     enum command command;
 
-    maze = read_map ( map_file_name );
+    /* maze = read_map ( map_file_name ); */
+    maze = generate_maze ( 20 );
 
     printf ( "escaped the read_map\n" );
     
