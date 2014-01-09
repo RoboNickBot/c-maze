@@ -1,4 +1,3 @@
-
  //////////////////////////////
  //                          //
  //         C - Maze         //
@@ -10,9 +9,9 @@
  This is rewritten from a java/swing game I made for a class project, mostly
  as a bit of practice in learning the C language (and SDL!)
 
- Right now it is feature-complete to the java version (minus dialog boxes
- explaining the "story") but has an updated lighting algorithm that *doesn't*
- go through walls! (still needs work)
+ It now has a random maze generator (!) and keyboard controls to set it apart
+ from the original, but I haven't added any kind of dialog boxes to explain
+ the "story" or congratulate you on your success.
 
  Dependancies:
     
@@ -53,5 +52,3 @@
 
     monsters?
         really this could become a rogue-like pretty easily
-
-    randomized mazes?
