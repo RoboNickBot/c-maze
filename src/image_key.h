@@ -8,5 +8,6 @@
  */
 enum image_key { ERROR, SPACE1, WALL1, DARK1, DARK2, GOAL1, PN, PS, PE, PW };
 
+enum maze_debug_image_key { DB_WALL, DB_SPACE, DB_START, DB_GOAL };
 
 #endif

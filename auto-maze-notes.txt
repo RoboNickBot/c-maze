@@ -1,0 +1,40 @@
+For making a basic type maze, without rooms:
+
+    have a starting point, with a direction
+
+    choices for the next recursive call are forward, left, right, or branch (two or all three of the previous)
+    
+        if one of these choices intersects with a previous branch, it isnt taken
+
+        branches cannot be written in a depth-first fasion, though, or the map would fill up with one long one
+
+            to this end, maybe I could make a linked list of branch heads -- a new branch is added when created, and for 
+            each iteration the list is traversed and each branch has a certain probability of being advanced
+            (here, advanced simply means picking one of those recursive call options)
+            each new tile that the branch fills becomes the new head of that branch stored in the list.
+
+            the algorithm ends and writes a file when no branches can advance any further
+
+        constants for straightness/bendyness (weighing forward moves over turns) and branchyness could be tweaked to get the best mazes
+
+
+if I wanted to add rooms, I could plop randomly sized rectangles on top of the completed maze before it is written to file.
+
+    this could also become a difficulty changer -- easier levels have more/larger rooms
+
+
+
+then, the player could be placed at the start-point or at a random point in the maze, and the goal could be placed at a branch head
+or at a random point (though a branch head might be necessary for the goal, so that it does not cut off large portions of the maze)
+
+
+
+moving beyond, it would be useful for the algorithm to be able to take a partial maze as an argument (such as a "final floor" with a 
+specifically designed treasure room) and for it to be able to fill in specified sections of the maze with random corridors
+
+    a special character could be used as a "coupling point" -- its a space that isnt considered as such by the algorithm and therefore
+    can be intersected by randomly generated halls (of course, I'd have to find some way to guaruntee that it *is* intersected)
+
+
+while we're taking random ideas, how about a converter on the side for turning bitmaps into text-mazes? that way I could draw new levels
+with my magical computer pen instead of vim...

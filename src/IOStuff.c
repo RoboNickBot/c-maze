@@ -7,6 +7,7 @@
 #include "internals.h"
 #include "directionals.h"
 #include "image_key.h"
+#include "IOStuff.h"
 
 struct game_display
 {
@@ -14,11 +15,31 @@ struct game_display
     SDL_Renderer *ren;
 
     SDL_Texture *sheet;
+
+    int tileSize;
 };
 
-struct game_display *init_display ( int mapsize )
+struct game_display *init_display ( int mapsize, enum displaytype type )
 {
+    int tileSize;
+    char *images;
+
     printf ( "starting init_display\n" );
+
+    switch ( type )
+    {
+        case MAINGAME:
+            tileSize = 16;
+            images = "res/tile_sheet.xcf";
+            break;
+        case MAZEDEBUG:
+            tileSize = 2;
+            images = "res/mazetest.xcf";
+            break;
+        default:
+            tileSize = 1;
+            break;
+    }
 
     if ( SDL_Init ( SDL_INIT_EVERYTHING ) == -1 )
     {
@@ -29,7 +50,7 @@ struct game_display *init_display ( int mapsize )
     struct game_display *display = malloc ( sizeof ( struct game_display ) );
 
     display->win = NULL;
-    display->win = SDL_CreateWindow ( "Eye of the Pharaohs", 0, 0, mapsize * 16, mapsize * 16, SDL_WINDOW_SHOWN );
+    display->win = SDL_CreateWindow ( "Eye of the Pharaohs", 0, 0, mapsize * tileSize, mapsize * tileSize, SDL_WINDOW_SHOWN );
     if ( display->win == NULL )
     {
         printf ( SDL_GetError () );
@@ -43,16 +64,18 @@ struct game_display *init_display ( int mapsize )
     }
 
     display->sheet = NULL;
-    display->sheet = IMG_LoadTexture ( display->ren, "res/tile_sheet.xcf" );
+    display->sheet = IMG_LoadTexture ( display->ren, images );
+
+    display->tileSize = tileSize;
 
     printf ( "completing init_display\n" );
 
     return display;
 }
 
-void apply_texture ( int x, int y, SDL_Renderer *ren, SDL_Texture *tex, enum image_key image )
+void apply_texture ( int x, int y, struct game_display *display, int image )
 {
-    int ts = 16;
+    int ts = display->tileSize;
 
     SDL_Rect pos;
     pos.x = x * ts;
@@ -61,12 +84,12 @@ void apply_texture ( int x, int y, SDL_Renderer *ren, SDL_Texture *tex, enum ima
     pos.h = ts;
 
     SDL_Rect slice;
-    slice.x = ( int ) image * ts;
+    slice.x = image * ts;
     slice.y = 0;
     slice.w = ts;
     slice.h = ts;
 
-    SDL_RenderCopy ( ren, tex, &slice, &pos );
+    SDL_RenderCopy ( display->ren, display->sheet, &slice, &pos );
 
 }
 
@@ -104,7 +127,7 @@ void update_display ( struct game_display *display, struct mazegame *game )
                     break;
             }
             
-            apply_texture ( x, y, display->ren, display->sheet, image );
+            apply_texture ( x, y, display, image );
         }
     }
 
@@ -125,9 +148,9 @@ void update_display ( struct game_display *display, struct mazegame *game )
         default:
             break;
     }
-    apply_texture ( game->maze->goal_position.x, game->maze->goal_position.y, display->ren, display->sheet, GOAL1 );
+    apply_texture ( game->maze->goal_position.x, game->maze->goal_position.y, display, GOAL1 );
 
-    apply_texture ( game->player.p.x, game->player.p.y, display->ren, display->sheet, image );
+    apply_texture ( game->player.p.x, game->player.p.y, display, image );
 
     for ( x = 0; x < s; x++ )
     {
@@ -138,12 +161,12 @@ void update_display ( struct game_display *display, struct mazegame *game )
                 if ( game->maze->tiles[x * s + y].light < 1 )
                 {
                     image = DARK2;
-                    apply_texture ( x, y, display->ren, display->sheet, image );
+                    apply_texture ( x, y, display, image );
                 }
                 else
                 {
                     image = DARK1;
-                    apply_texture ( x, y, display->ren, display->sheet, image );
+                    apply_texture ( x, y, display, image );
                 }
             }
         }
@@ -151,9 +174,43 @@ void update_display ( struct game_display *display, struct mazegame *game )
 
     SDL_RenderPresent ( display->ren );
 
-    SDL_Delay ( 20 );
 
 }
+
+void display_maze ( struct game_display *display, struct maze *maze )
+{
+    int x, y;
+    int s = maze->size;
+    enum maze_debug_image_key image;
+
+    for ( x = 0; x < s; x++ )
+    {
+        for ( y = 0; y < s; y++ )
+        {
+            switch ( get_tiletype ( maze->tiles, s, DR_new_position ( x, y ) ) )
+            {
+                case WALL:
+                    image = DB_WALL;
+                    break;
+                case SPACE:
+                    image = DB_SPACE;
+                    break;
+                default:
+                    image = DB_WALL;
+                    break;
+            }
+            
+            apply_texture ( x, y, display, image );
+        }
+    }
+
+    apply_texture ( maze->goal_position.x, maze->goal_position.y, display, DB_GOAL );
+
+    apply_texture ( maze->start_position.x, maze->start_position.y, display, DB_START );
+
+    SDL_RenderPresent ( display->ren );
+}
+
 
 void get_command ( enum command *command )
 {
@@ -193,4 +250,6 @@ void get_command ( enum command *command )
             }
         }
     }
+
+    SDL_Delay ( 20 );
 }

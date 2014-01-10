@@ -22,6 +22,8 @@ int main ()
     int game_running = 1;
     enum command command;
 
+    srand ( time ( NULL ) );
+
     /* maze = read_map ( map_file_name ); */
     maze = generate_maze ( 20 );
 
@@ -30,7 +32,7 @@ int main ()
     game = new_mazegame ( maze );
 
     printf ( "initializing display" );
-    display = init_display ( game.maze->size );
+    display = init_display ( game.maze->size, MAINGAME );
 
     while ( game_running )
     {
