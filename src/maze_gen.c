@@ -7,16 +7,16 @@
 
 struct probs
 {
-    double twisty; /* Probability of changing direction */
-    double swirly; /* Probability of going right when changing direction (so non-swirly would be 0.5) */
-    double branchy; /* Probability of branching */
+    int twisty; /* Probability of changing direction */
+    int swirly; /* Probability of going right when changing direction (so non-swirly would be 0.5) */
+    int branchy; /* Probability of branching */
 };
 
 struct path_head
 {
     struct DR_position p;
     enum DR_direction d;
-    double g; /* growth probability */
+    int g; /* growth probability */
     int still_space;
 
     struct path_head *next;
@@ -42,7 +42,7 @@ struct path_head *get_path ( struct path_head *last, int i )
 {
     struct path_head *result;
 
-    if ( i <= 0 )
+    if ( i < 0 )
     {
         result = last;
     }
@@ -54,7 +54,7 @@ struct path_head *get_path ( struct path_head *last, int i )
     return result;
 }
 
-struct path_head *new_path ( struct DR_position p, enum DR_direction d, double g )
+struct path_head *new_path ( struct DR_position p, enum DR_direction d, int g )
 {
     struct path_head *path;
     path = malloc ( sizeof ( struct path_head ) );
@@ -146,17 +146,17 @@ int try_move ( struct mazetile *tiles, int size, struct path_head *last, struct 
 
 void try_branch ( struct mazetile *tiles, int size, struct path_head *last, enum DR_orientation o, struct probs probs )
 {
-    double r;
+    int r;
     int i;
     struct path_head *new_branch;
 
     for ( i = 0; i < 2; i++ )
     {
     new_branch = NULL;
-    r = rand () / ( double ) RAND_MAX;
+    r = ( ( int ) rand () ) % 100;
     if ( r < probs.branchy )
     {
-        r = rand () / ( double ) RAND_MAX;
+        r = ( ( int ) rand () ) % 100;
         switch ( i )
         {
             case 0:
@@ -197,7 +197,7 @@ void try_branch ( struct mazetile *tiles, int size, struct path_head *last, enum
         if ( try_move ( tiles, size, new_branch, DR_get_adj ( new_branch->p, new_branch->d ), new_branch->d ) )
         {
             add_path ( last, new_branch );
-            printf ( "added path at %d, %d with direction %d\n", new_branch->p.x, new_branch->p.y, new_branch->d );
+            /* printf ( "added path at %d, %d with direction %d\n", new_branch->p.x, new_branch->p.y, new_branch->d ); */
         }
     }
     }
@@ -210,24 +210,24 @@ int advance_path ( struct mazetile *tiles, int size, struct path_head *last, str
     enum DR_orientation o;
     enum DR_direction dir;
     struct DR_position try_pos;
-    double r;
+    int r;
     int result = 0;
 
     if ( check_all ( tiles, size, last->p, last->d ) )
     {
         result = 1;
 
-        r = rand () / ( double ) RAND_MAX;
+        r = ( ( int ) rand () ) % 100;
         if ( r < last->g )
         {
-            r = rand () / ( double ) RAND_MAX;
+            r = ( ( int ) rand () ) % 100;
             if ( r < probs.twisty )
             {
                 o = FRONT;
             }
             else
             {
-                r = rand () / ( double ) RAND_MAX;
+                r = ( ( int ) rand () ) % 100;
                 if ( r < probs.swirly )
                 {
                     o = RIGHT;
@@ -255,17 +255,29 @@ int advance_path ( struct mazetile *tiles, int size, struct path_head *last, str
         
         
 
-int iterate_paths (struct mazetile *tiles, int size, struct path_head *last, struct probs probs )
+int iterate_paths (struct mazetile *tiles, int size, struct path_head *last, struct probs probs, int *count )
 {
     int i = 0;
     int j = 0;
+
+    if ( *count > 1000000 )
+    {
+        *count = 0;
+        printf ( "." );
+        fflush ( stdout );
+    }
+    else
+    {
+        *count += 1;
+    }
+
     if ( last->still_space )
     {
         i = advance_path ( tiles, size, last, probs );
     }
     if ( last->next != NULL )
     {
-        j = iterate_paths ( tiles, size, last->next, probs );
+        j = iterate_paths ( tiles, size, last->next, probs, count );
     }
 
     return ( i || j );
@@ -273,11 +285,12 @@ int iterate_paths (struct mazetile *tiles, int size, struct path_head *last, str
 
 
 
-struct maze *generate_maze ( int size )
+struct maze *generate_maze ( int size, int twisty, int swirly, int branchy )
 {
     int x;
     int y;
-    double r;
+    int r;
+    int count = 0;
     int space = 1;
     struct mazetile *tiles;
     struct probs probs;
@@ -285,9 +298,15 @@ struct maze *generate_maze ( int size )
     struct DR_position goal_position;
     struct path_head *root;
 
-    probs.twisty = 0.7;
-    probs.swirly = 0.5;
-    probs.branchy = 0.3;
+    /*  Original probabilites were
+    probs.twisty = 70;
+    probs.swirly = 50;
+    probs.branchy = 30;
+    */
+
+    probs.twisty = twisty;
+    probs.swirly = swirly;
+    probs.branchy = branchy;
 
 
     if ( size < 10 )
@@ -313,15 +332,17 @@ struct maze *generate_maze ( int size )
     printf ( "Starting position at %d, %d\n", x, y );
     tiles[x * size + y].t = SPACE;
 
-    root = new_path ( start_position, SOUTH, 0.8 );
+    root = new_path ( start_position, SOUTH, 80 );
     printf ( "root created\n" );
 
+    printf ( "Generating maze ... " );
     x=0;
     while ( space && x < 5000 )
     {
-        space = iterate_paths ( tiles, size, root, probs );
+        space = iterate_paths ( tiles, size, root, probs, &count );
         x++;
     }
+    printf ( "\n" );
 
     x = ( int ) ( rand () / ( double ) RAND_MAX * ( ( double ) count_paths ( root ) ) );
 

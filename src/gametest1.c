@@ -25,7 +25,7 @@ int main ()
     srand ( time ( NULL ) );
 
     /* maze = read_map ( map_file_name ); */
-    maze = generate_maze ( 20 );
+    maze = generate_maze ( 20, 70, 50, 30 );
 
     printf ( "escaped the read_map\n" );
     

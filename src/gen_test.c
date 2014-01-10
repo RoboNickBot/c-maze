@@ -8,37 +8,57 @@
 #include "image_key.h"
 #include "IOStuff.h"
 
-int main ()
+int main ( int argc, char *argv[] )
 {
-
     struct maze *maze;
     struct game_display *display;
     int c = 1;
     enum command com;
 
-    srand ( time ( NULL ) );
-    maze = generate_maze ( 370 );
+    int maze_size = 20;
+    int maze_twisty = 70;
+    int maze_swirly = 50;
+    int maze_branchy = 30;
 
-    write_map ( maze, "mazes/gentest3.txt" );
-
-    display = init_display ( maze->size, MAZEDEBUG );
-
-    display_maze ( display, maze );
-
-    while ( c )
+    if ( argc != 1 && argc != 5 )
     {
-        get_command ( &com );
-        if ( com == QUIT )
-        {
-            c = 0;
-        }
+        printf ( "Syntax: %s [size] [twisty] [swirly] [branchy]\n", argv[0] );
+        printf ( "  if no options are specified, defaults will be %d %d %d %d\n", maze_size, maze_twisty, maze_swirly, maze_branchy );
     }
+    else
+    {
+        if ( argc == 5 )
+        {
+            maze_size = atoi ( argv[1] );
+            maze_twisty = atoi ( argv[2] );
+            maze_swirly = atoi ( argv[3] );
+            maze_branchy = atoi ( argv[4] );
+        }
 
-    destroy_display ( display );
-
-
-    destroy_maze ( maze );
-    free ( maze );
+        srand ( time ( NULL ) );
+        maze = generate_maze ( maze_size, maze_twisty, maze_swirly, maze_branchy );
+    
+        write_map ( maze, "mazes/gentest3.txt" );
+    
+        display = init_display ( maze->size, MAZEDEBUG );
+    
+        display_maze ( display, maze );
+    
+        while ( c )
+        {
+            get_command ( &com );
+            if ( com == QUIT )
+            {
+                c = 0;
+            }
+        }
+    
+        destroy_display ( display );
+    
+    
+        destroy_maze ( maze );
+        free ( maze );
+    }
     
     return 0;
 }
