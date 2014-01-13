@@ -1,0 +1,25 @@
+pokemon-like movement and 3d-looking walls
+
+change object to general treasure collecting? piles of coins and chests that need keys?
+  of course, flashing messages when you get it
+
+multiple levels? tooltip messages to tell you controls for going up/down stairs etc?
+
+flashlight batteries
+
+pits that cannot be crossed but can be seen across
+
+monsters that only move in the dark
+
+breadcrumb pickups that give you limited mapping
+
+guns to kill the monsters?
+
+tutorial level in full-visibility hedge-maze?
+
+
+incomplete maps!!!
+
+    for the tomb setting, there could be a drawn-map type overlay in areas you can't see, and it could be different in some places from the actual map ( cave-ins and pits and such might show up )
+
+    for a space-station setting, it could be more of a hologram thing
