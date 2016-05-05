@@ -1,7 +1,5 @@
 # Makefile for cmaze
 
-out = test
-
 VPATH = src
 BIN = bin
 BUILD = build
