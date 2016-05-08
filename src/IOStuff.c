@@ -231,44 +231,61 @@ void display_maze ( struct game_display *display, struct maze *maze )
 }
 
 
-void get_command ( enum command *command )
-{
-    *command = NONE;
-    /* The compiler complained when this was initialized to NULL,
-     * so I guess I'll leave it as is for now..
-     */
-    SDL_Event e;
+void get_command ( enum command *command ) {
 
-    while ( SDL_PollEvent ( &e ) )
-    {
-        if ( e.type == SDL_QUIT )
-        {
-            *command = QUIT;
-        }
-        else if ( e.type == SDL_KEYDOWN )
-        {
-            switch ( e.key.keysym.sym )
-            {
-                case SDLK_ESCAPE:
-                    *command = QUIT;
-                    break;
-                case SDLK_w:
-                    *command = MOVE_N;
-                    break;
-                case SDLK_s:
-                    *command = MOVE_S;
-                    break;
-                case SDLK_a:
-                    *command = MOVE_W;
-                    break;
-                case SDLK_d:
-                    *command = MOVE_E;
-                    break;
-                default:
-                    break;
-            }
-        }
+  *command = NONE;
+  /* The compiler complained when this was initialized to NULL,
+   * so I guess I'll leave it as is for now..
+   */
+  SDL_Event e;
+
+  while ( SDL_PollEvent ( &e ) ) {
+    if ( e.type == SDL_QUIT ) {
+      *command = QUIT;
+    } else if ( e.type == SDL_KEYDOWN ) {
+
+      switch ( e.key.keysym.sym ) {
+
+        /* ESC and Q seem the most natural for quiting */
+      case SDLK_ESCAPE:
+        *command = QUIT;
+        break;
+      case SDLK_q:
+        *command = QUIT;
+        break;
+
+        /* WASD moves character */
+      case SDLK_w:
+        *command = MOVE_N;
+        break;
+      case SDLK_s:
+        *command = MOVE_S;
+        break;
+      case SDLK_a:
+        *command = MOVE_W;
+        break;
+      case SDLK_d:
+        *command = MOVE_E;
+        break;
+
+        /* arrow keys work too */
+      case SDLK_UP:
+        *command = MOVE_N;
+        break;
+      case SDLK_DOWN:
+        *command = MOVE_S;
+        break;
+      case SDLK_LEFT:
+        *command = MOVE_W;
+        break;
+      case SDLK_RIGHT:
+        *command = MOVE_E;
+        break;
+
+      default:
+        break;
+      }
     }
-
-    SDL_Delay ( 20 );
+  }
+  SDL_Delay ( 20 );
 }
