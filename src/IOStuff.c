@@ -35,9 +35,7 @@ const char *debug_image_set = "res/mazetest.xcf";
 const char *image_locations[] = {
   "./", /* local image-sets take priority */
 
-  /* PLACE other distro-relevant paths here */
-
-  "/usr/share/c-maze/", /* the usual system place is last choice */
+  USRPREFIX "/usr/share/c-maze/", /* the usual system place is second choice */
 
   NULL,
 };

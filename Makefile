@@ -5,8 +5,14 @@ BIN = bin
 BUILD = build
 DOC = doc
 RES = res
-CC = gcc
-COMPILE = $(CC) -c $(INCLUDES)
+CC = gcc -DTESTMACRO=TESTMACRA
+
+# setting the "USRPREFIX" sends the installation dir into the
+# source-files so that they can find data files like the game images
+COMPILE = $(CC) \
+  -DUSRPREFIX=\"$(out)\" \
+  -c $(INCLUDES)
+
 LINK = $(CC) $(LOADS)
 
 INCLUDES = \
@@ -40,8 +46,8 @@ all : $(BUILD) $(BIN) $(PRODUCTS)
 
 install :
 	install -vD $(BIN)/* -t $(out)/usr/bin/
-	install -vD $(RES)/* -t $(out)/usr/share/res/
-	install -vD $(DOC)/* -t $(out)/usr/share/doc/
+	install -vD $(RES)/* -t $(out)/usr/share/c-maze/res/
+	install -vD $(DOC)/* -t $(out)/usr/share/c-maze/doc/
 
 clean :
 	rm -vr $(REBUILDABLES)
