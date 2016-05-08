@@ -17,22 +17,20 @@
     
     make, gcc, SDL2, SDL2_image
 
- Installation/Build:
-    
-    on Unix-likes, cd to the directory with the files and run make
-    
-    if building on Windows.. ?  I don't really know Windows development
-
  Objective:
     
-    find the treasure
+    Find the fabled *Eye of the Pharaohs* before your flashlight dies
 
 
  Controls:
     
-    WASD for turning and movement
+    WASD (or arrow keys) for turning and movement
 
-    ESC to quit (or just close the window)
+    SPACE to run
+
+    F to toggle flashlight between low and high power
+
+    ESC (or q) to quit (or just close the window)
 
  
  Things I'd like to add:

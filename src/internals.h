@@ -22,13 +22,15 @@
 
 #include "directionals.h"
 
-enum command { QUIT, MOVE_N, MOVE_S, MOVE_E, MOVE_W, RUN, NONE };
+enum command { QUIT, MOVE_N, MOVE_S, MOVE_E, MOVE_W, RUN, FLASHLIGHT, NONE };
 enum tiletype { WALL, SPACE };
 
 struct player
 {
-    struct DR_position p;
-    enum DR_direction d;
+  struct DR_position p;
+  enum DR_direction d;
+  int battery;
+  int flashlight_switch;
 };
 struct mazetile
 {

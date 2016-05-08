@@ -55,6 +55,8 @@ struct player new_player ( struct DR_position start_pos )
     struct player player;
     player.p = start_pos;
     player.d = SOUTH;
+    player.battery = 8000;
+    player.flashlight_switch = 1;
     
     return player;
 }
@@ -197,10 +199,29 @@ int turn_player( struct mazegame *g ) {
   return turned;
 }
 
+void set_switch( struct mazegame *g, int v ) {
+  g->player.flashlight_switch = v;
+}
+
+void flip_switch( struct mazegame *g ) {
+  if( 1 == g->player.flashlight_switch ) {
+    set_switch( g, 8 );
+  } else {
+    set_switch( g, 1 );
+  }
+}
+
 void update_game( struct mazegame *g, enum command player_move ) {
   int s = g->maze->size;
 
+  int power = g->player.battery * g->player.flashlight_switch * 4;
+
   switch( player_move ) {
+
+    case FLASHLIGHT:
+      flip_switch( g );
+      break;
+
     case RUN:
       if( !move_player( g, g->player.d ) ) {
         turn_player( g );
@@ -223,5 +244,7 @@ void update_game( struct mazegame *g, enum command player_move ) {
   }
 
   reset_light( g );
-  recurse_light( 10, g->maze, g->player.d, PRIMARY, g->player.p );
+  recurse_light( power / 1600, g->maze, g->player.d, PRIMARY, g->player.p );
+
+  g->player.battery -= g->player.flashlight_switch;
 }

@@ -57,7 +57,7 @@ int main ()
     {
         update_display ( display, &game );
         get_command ( &command );
-        if ( command == QUIT || DR_equal_pos ( game.player.p, game.maze->goal_position ) ) {
+        if ( command == QUIT || DR_equal_pos ( game.player.p, game.maze->goal_position ) || game.player.battery < -5 ) {
           game_running = 0;
 
         } else if ( RUN == command ) {

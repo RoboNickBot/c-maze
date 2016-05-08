@@ -326,6 +326,11 @@ void get_command ( enum command *command ) {
         *command = RUN;
         break;
 
+        /*F to switch flashlight */
+      case SDLK_f:
+        *command = FLASHLIGHT;
+        break;
+
         /* WASD moves character */
       case SDLK_w:
         *command = MOVE_N;
