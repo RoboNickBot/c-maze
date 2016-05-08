@@ -1,3 +1,6 @@
 *~
 result
 *.o
+bin/
+build/
+core

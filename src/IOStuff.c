@@ -19,6 +19,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -27,6 +28,69 @@
 #include "directionals.h"
 #include "image_key.h"
 #include "IOStuff.h"
+
+const char *game_image_set = "res/tile_sheet.xcf";
+const char *debug_image_set = "res/mazetest.xcf";
+
+const char *image_locations[] = {
+  "./", /* local image-sets take priority */
+
+  /* PLACE other distro-relevant paths here */
+
+  "/usr/share/c-maze/", /* the usual system place is last choice */
+
+  NULL,
+};
+
+char *str_init( const int len ) {
+  char *str;
+
+  str = malloc( sizeof( char ) * ( len + 1 ) );
+  str[0] = '\0';
+
+  return str;
+}
+
+int file_exists( const char *filename ) {
+  FILE *file;
+  int exists = 0;
+  
+  if( file = fopen( filename, "r" ) ) {
+    fclose( file );
+    exists = 1;
+  }
+  return exists;
+}
+
+char *select_path( const char *candidates[], const char *filename ) {
+  char *path;
+  int sc;
+  int sf;
+
+  int done = 0;
+
+  sf = strlen( filename );
+
+  for( int i = 0; NULL != candidates[i] && !done; i++ ) {
+    sc = strlen( candidates[i] );
+
+    path = str_init( sc + sf );
+
+    strncat( path, candidates[i], sc );
+    strncat( path, filename, sf );
+
+    printf( "Checking if %s exists... ", path );
+    if( file_exists( path ) ) {
+      printf( "Success!\n" );
+      done = 1;
+    } else {
+      printf( "It does not :(\n" );
+      free( path );
+    }
+  }
+  if( !done ) path = NULL;
+  return path;
+}   
 
 struct game_display
 {
@@ -49,11 +113,11 @@ struct game_display *init_display ( int mapsize, enum displaytype type )
     {
         case MAINGAME:
             tileSize = 16;
-            images = "res/tile_sheet.xcf";
+            images = select_path( image_locations, "res/tile_sheet.xcf" );
             break;
         case MAZEDEBUG:
             tileSize = 2;
-            images = "res/mazetest.xcf";
+            images = select_path( image_locations, "res/mazetest.xcf" );
             break;
         default:
             tileSize = 1;
@@ -84,6 +148,11 @@ struct game_display *init_display ( int mapsize, enum displaytype type )
 
     display->sheet = NULL;
     display->sheet = IMG_LoadTexture ( display->ren, images );
+
+    if ( NULL != images ) {
+      printf( "Freeing images path...\n" );
+      free( images );
+    }
 
     display->tileSize = tileSize;
 
