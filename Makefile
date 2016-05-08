@@ -5,7 +5,7 @@ BIN = bin
 BUILD = build
 DOC = doc
 RES = res
-CC = gcc -DTESTMACRO=TESTMACRA
+CC = gcc
 
 # setting the "USRPREFIX" sends the installation dir into the
 # source-files so that they can find data files like the game images
@@ -35,8 +35,8 @@ CMAZETEST.o = \
 
 OBJS = $(CMAZE.o) $(CMAZETEST.o) $(GENERAL.o)
 
-CMAZE = $(BIN)/cmaze-game
-CMAZETEST = $(BIN)/cmaze-mazegen
+CMAZE = $(BIN)/c-maze-game
+CMAZETEST = $(BIN)/c-maze-mazegen
 
 PRODUCTS = $(CMAZE) $(CMAZETEST)
 
@@ -45,9 +45,9 @@ REBUILDABLES = $(BUILD) $(BIN)
 all : $(BUILD) $(BIN) $(PRODUCTS)
 
 install :
-	install -vD $(BIN)/* -t $(out)/usr/bin/
-	install -vD $(RES)/* -t $(out)/usr/share/c-maze/res/
-	install -vD $(DOC)/* -t $(out)/usr/share/c-maze/doc/
+	install -vD $(BIN)/* -t $(out)/bin/
+	install -vD $(RES)/* -t $(out)/share/c-maze/res/
+	install -vD $(DOC)/* -t $(out)/share/c-maze/doc/
 
 clean :
 	rm -vr $(REBUILDABLES)
