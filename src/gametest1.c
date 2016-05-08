@@ -57,13 +57,18 @@ int main ()
     {
         update_display ( display, &game );
         get_command ( &command );
-        if ( command == QUIT || DR_equal_pos ( game.player.p, game.maze->goal_position ) )
-        {
-            game_running = 0;
-        }
-        else
-        {
-            update_game ( &game, command );
+        if ( command == QUIT || DR_equal_pos ( game.player.p, game.maze->goal_position ) ) {
+          game_running = 0;
+
+        } else if ( RUN == command ) {
+          update_game( &game, command );
+          update_display( display, &game );
+          update_game( &game, command );
+          update_display( display, &game );
+          update_game( &game, command );
+
+        } else {
+          update_game ( &game, command );
         }
     }
 

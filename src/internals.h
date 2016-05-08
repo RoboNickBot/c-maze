@@ -22,7 +22,7 @@
 
 #include "directionals.h"
 
-enum command { QUIT, MOVE_N, MOVE_S, MOVE_E, MOVE_W, NONE };
+enum command { QUIT, MOVE_N, MOVE_S, MOVE_E, MOVE_W, RUN, NONE };
 enum tiletype { WALL, SPACE };
 
 struct player

@@ -321,6 +321,11 @@ void get_command ( enum command *command ) {
         *command = QUIT;
         break;
 
+        /* SPACE to run */
+      case SDLK_SPACE:
+        *command = RUN;
+        break;
+
         /* WASD moves character */
       case SDLK_w:
         *command = MOVE_N;

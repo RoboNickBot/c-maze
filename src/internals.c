@@ -127,68 +127,101 @@ void recurse_light ( float value, struct maze *maze, enum DR_direction d, enum r
     }
 }
 
+enum command assoc( enum DR_direction d ) {
+  enum command c;
+  
+  switch( d ) {
+  case NORTH:
+    c = MOVE_N;
+    break;
+  case SOUTH:
+    c = MOVE_S;
+    break;
+  case WEST:
+    c = MOVE_W;
+    break;
+  case EAST:
+    c = MOVE_E;
+    break;
+  default:
+    c = NONE;
+    break;
+  }
 
-void update_game ( struct mazegame *g, enum command player_move )
-{
-    int s = g->maze->size;
-    switch ( player_move )
-    {
-        case MOVE_N:
-            if ( g->player.d == NORTH )
-            {
-                if ( get_tiletype ( g->maze->tiles, s, DR_get_adj ( g->player.p, NORTH ) ) == SPACE )
-                {
-                    g->player.p = DR_get_adj ( g->player.p, NORTH );
-                }
-            }
-            else
-            {
-                g->player.d = NORTH;
-            }
-            break;
-        case MOVE_S:
-            if ( g->player.d == SOUTH )
-            {
-                if ( get_tiletype ( g->maze->tiles, s, DR_get_adj ( g->player.p, SOUTH ) ) == SPACE )
-                {
-                    g->player.p = DR_get_adj ( g->player.p, SOUTH );
-                }
-            }
-            else
-            {
-                g->player.d = SOUTH;
-            }
-            break;
-        case MOVE_W:
-            if ( g->player.d == WEST )
-            {
-                if ( get_tiletype ( g->maze->tiles, s, DR_get_adj ( g->player.p, WEST ) ) == SPACE )
-                {
-                    g->player.p = DR_get_adj ( g->player.p, WEST );
-                }
-            }
-            else
-            {
-                g->player.d = WEST;
-            }
-            break;
-        case MOVE_E:
-            if ( g->player.d == EAST )
-            {
-                if ( get_tiletype ( g->maze->tiles, s, DR_get_adj ( g->player.p, EAST ) ) == SPACE )
-                {
-                    g->player.p = DR_get_adj ( g->player.p, EAST );
-                }
-            }
-            else
-            {
-                g->player.d = EAST;
-            }
-            break;
-        default:
-            break;
-    }
+  return c;
+}
 
-    reset_light ( g );
-    recurse_light ( 10, g->maze, g->player.d, PRIMARY, g->player.p );
+int move_player( struct mazegame *g, const enum DR_direction d ) {
+  int s = g->maze->size;
+  int moved = 0;
+
+  /* the adjacent position */
+  struct DR_position p = DR_get_adj( g->player.p, d );
+
+  /* the tiletype of the adjacent position */
+  enum tiletype t = get_tiletype( g->maze->tiles, s, p );
+  
+  if( d != g->player.d ) {
+    g->player.d = d;
+    moved = 1;
+  } else if( SPACE == t ) {
+    g->player.p = p;
+    moved = 1;
+  }
+
+  return moved;
+}
+
+int check_around( const struct mazegame *g, const enum DR_orientation o ) {
+  struct player p = g->player;
+  enum tiletype t =
+    get_tiletype( g->maze->tiles, g->maze->size, DR_get_adj( p.p, DR_get_rel( p.d, o ) ) );
+
+  return( SPACE == t );
+}
+
+int turn_player( struct mazegame *g ) {
+  int turned = 0;
+
+  int left = check_around( g, LEFT );
+  int right = check_around( g, RIGHT );
+
+  if( left && !right ) {
+    g->player.d = DR_get_rel( g->player.d, LEFT );
+    turned = 1;
+  } else if( right && !left ) {
+    g->player.d = DR_get_rel( g->player.d, RIGHT );
+    turned = 1;
+  }
+
+  return turned;
+}
+
+void update_game( struct mazegame *g, enum command player_move ) {
+  int s = g->maze->size;
+
+  switch( player_move ) {
+    case RUN:
+      if( !move_player( g, g->player.d ) ) {
+        turn_player( g );
+      }
+      break;
+    case MOVE_N:
+      move_player( g, NORTH );
+      break;
+    case MOVE_S:
+      move_player( g, SOUTH );
+      break;
+    case MOVE_W:
+      move_player( g, WEST );
+      break;
+    case MOVE_E:
+      move_player( g, EAST );
+      break;
+    default:
+      break;
+  }
+
+  reset_light( g );
+  recurse_light( 10, g->maze, g->player.d, PRIMARY, g->player.p );
 }
